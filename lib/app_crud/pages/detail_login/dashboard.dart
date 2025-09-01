@@ -5,7 +5,6 @@ import 'package:project_2/app_crud/db/db_helper.dart';
 import 'package:project_2/app_crud/models/book.dart';
 import 'package:project_2/app_crud/screens/add_book_screen.dart';
 import 'package:project_2/app_crud/screens/book_detail_screen.dart';
-import 'package:project_2/app_crud/screens/profile_screen.dart';
 
 class DashboardUser extends StatefulWidget {
   static const String routeName = '/Book';
@@ -397,49 +396,135 @@ class _DashboardUserState extends State<DashboardUser> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Koleksi Buku'),
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ProfileScreen()),
-              );
-              if (result == 'logout') {
-                // Handle logout from profile screen
-              }
-            },
-            icon: const Icon(Icons.person),
-          ),
-        ],
-      ),
+      // IconButton(
+      //   onPressed: () async {
+      //     final result = await Navigator.push(
+      //       context,
+      //       MaterialPageRoute(builder: (context) => const ProfileScreen()),
+      //     );
+      //     if (result == 'logout') {
+      //       // Handle logout from profile screen
+      //     }
+      //   },
+      //   icon: const Icon(Icons.person),
+      // ),
       body: Column(
         children: [
           // Statistics
-          _buildStatistics(),
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (value) => _applyFilter(),
-              decoration: InputDecoration(
-                hintText: 'Cari buku, penulis, atau genre...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        onPressed: () {
-                          _searchController.clear();
-                          _applyFilter();
-                        },
-                        icon: const Icon(Icons.clear),
-                      )
-                    : null,
+          Container(
+            height: 168,
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              color: Colors.black, // background hitam
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(40), // 🔹 rounded kiri atas
+                bottomRight: Radius.circular(40), // 🔹 rounded kanan atas
               ),
             ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Bagian atas: avatar, teks sapaan, notifikasi
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        // Avatar
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor:
+                              Colors.grey[300], // warna latar belakang
+                          child: Icon(
+                            Icons.person, // icon default orang
+                            color: Colors.black,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        // Sapaan
+                        const Text(
+                          "Halo, Aldi Kurniawan",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Icon notifikasi
+                    const Icon(
+                      Icons.notifications,
+                      color: Colors.white,
+                      size: 26,
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+                // Bagian bawah: search + dropdown
+                Row(
+                  children: [
+                    // Search box
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(0),
+                          child: TextField(
+                            controller: _searchController,
+                            onChanged: (value) => _applyFilter(),
+                            decoration: InputDecoration(
+                              hintText: 'Cari Lapangan',
+
+                              prefixIcon: const Icon(Icons.search),
+                              suffixIcon: _searchController.text.isNotEmpty
+                                  ? IconButton(
+                                      onPressed: () {
+                                        _searchController.clear();
+                                        _applyFilter();
+                                      },
+                                      icon: const Icon(
+                                        Icons.clear,
+                                        color: Colors.black,
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 20),
+                    // Dropdown box
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 11,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: const [
+                          Text("Jakarta"),
+                          Icon(Icons.arrow_drop_down),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
+          _buildStatistics(),
+          // Search Bar
+
           // Filter Chips
           _buildFilterChips(),
           // Book List
