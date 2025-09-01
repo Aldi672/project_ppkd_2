@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+
 import 'package:project_2/app_crud/pages/Api/authentication.dart';
+import 'package:project_2/app_crud/pages/detail_login/dashboard.dart';
 import 'package:project_2/app_crud/pages/login-register_api/register_user.dart';
 import 'package:project_2/app_crud/preference/shared_preference.dart';
-import 'package:project_2/app_crud/screens/book_list_screen.dart';
 
 class UserLogin extends StatefulWidget {
   static const String routeName = '/login';
@@ -15,7 +17,6 @@ class UserLogin extends StatefulWidget {
 
 class _UserLoginState extends State<UserLogin> {
   final _formKey = GlobalKey<FormState>();
-
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
@@ -80,7 +81,7 @@ class _UserLoginState extends State<UserLogin> {
           child: Center(
             child: SingleChildScrollView(
               child: Form(
-                // key: _formKey,
+                key: _formKey,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -214,57 +215,75 @@ class _UserLoginState extends State<UserLogin> {
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () async {
-                                if (!_formKey.currentState!.validate()) return;
+                                if (_formKey.currentState!.validate()) {
+                                  final email = emailController.text.trim();
+                                  final password = passwordController.text
+                                      .trim();
 
-                                setState(() => _isLoading = true);
+                                  try {
+                                    // 🔹 Panggil API login
+                                    final user =
+                                        await AuthenticationAPI.loginUser(
+                                          email: email,
+                                          password: password,
+                                        );
 
-                                try {
-                                  final response =
-                                      await AuthenticationAPI.loginUser(
-                                        email: emailController.text.trim(),
-                                        password: passwordController.text,
+                                    if (user.data != null) {
+                                      // ✅ Login sukses → tampilkan dialog dengan Lottie
+                                      showDialog(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            content: SizedBox(
+                                              height: 150,
+                                              width: 150,
+                                              child: Lottie.asset(
+                                                'assets/lottie/otp.json',
+                                                repeat: false,
+                                                onLoaded: (composition) {
+                                                  Future.delayed(
+                                                    composition.duration,
+                                                    () {
+                                                      if (mounted) {
+                                                        Navigator.pop(
+                                                          context,
+                                                        ); // Tutup dialog
+                                                        Navigator.pushReplacement(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                const DashboardUser(),
+                                                          ),
+                                                        );
+                                                      }
+                                                    },
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          );
+                                        },
                                       );
-
-                                  // ✅ simpan session ke SharedPreferences
-                                  await PreferenceHandler.saveLogin();
-                                  await PreferenceHandler.saveToken(
-                                    response!.data.token,
-                                  );
-                                  await PreferenceHandler.saveUserData(
-                                    response.data.user.name,
-                                    response.data.user.email,
-                                  );
-                                  await PreferenceHandler.saveUserId(
-                                    response.data.user.id,
-                                  );
-
-                                  // ✅ Tampilkan pesan sukses
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        "Login sukses, selamat datang ${response.data.user.name}",
-                                      ),
-                                      backgroundColor: Colors.green,
-                                    ),
-                                  );
-
-                                  // ✅ Navigate ke BookListScreen
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const BookListScreen(),
-                                    ),
-                                  );
-                                } catch (e) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text("Login gagal: $e"),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                } finally {
-                                  setState(() => _isLoading = false);
+                                    }
+                                  } catch (e) {
+                                    // ❌ Kalau login gagal → tampilkan dialog error
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          content: Text(e.toString()),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
+                                              child: const Text("OK"),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  }
                                 }
                               },
                               child: _isLoading
@@ -285,18 +304,12 @@ class _UserLoginState extends State<UserLogin> {
                               children: [
                                 const Text('Belum punya akun? '),
                                 TextButton(
-                                  onPressed: () async {
-                                    final result = await Navigator.push(
+                                  onPressed: () {
+                                    Navigator.pushNamed(
                                       context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const RegisterUser(),
-                                      ),
+                                      RegisterUser.routeName,
                                     );
-
-                                    // jika dari register kembali dengan success → reload data
                                   },
-
                                   child: const Text(
                                     'Daftar',
                                     style: TextStyle(

@@ -1,5 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:project_2/app_crud/home.dart';
+import 'package:project_2/app_crud/models/registrasi_api.dart';
 import 'package:project_2/app_crud/pages/Api/authentication.dart';
 import 'package:project_2/app_crud/pages/login-register_api/login_user.dart';
 
@@ -23,88 +26,50 @@ class _RegisterUserState extends State<RegisterUser> {
 
   /// 🔹 Register dari form input
   Future<void> _registerUser() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
 
-    setState(() => _isLoading = true);
+      try {
+        RegistrasiUserApi response = await AuthenticationAPI.registerUser(
+          name: namaController.text,
+          email: emailController.text,
+          password: passwordController.text,
+        );
 
-    try {
-      // 🔹 Register ke API dengan data dari input user
-      final user = await AuthenticationAPI.registerUser(
-        name: namaController.text.trim(),
-        email: emailController.text.trim(),
-        password: passwordController.text,
-      );
+        // 🔹 Simpan ke SQLite juga
 
-      print("Register sukses: ${user?.data.user.name}");
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("${response.message}!")));
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("${user?.message}!"),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      await Future.delayed(const Duration(seconds: 2));
-
-      Navigator.pop(context, true); // balik ke login
-    } catch (e) {
-      print("Error register: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error: ${e.toString()}"),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      setState(() => _isLoading = false);
+        Navigator.pushNamed(context, UserLogin.routeName);
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("$e")));
+      } finally {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   /// 🔹 Login dari form input
-  Future<void> _login() async {
-    setState(() => _isLoading = true);
-    try {
-      final user = await AuthenticationAPI.loginUser(
-        email: emailController.text.trim(),
-        password: passwordController.text,
-      );
-
-      print("Login sukses: Token ${user?.data.token}");
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login sukses"), backgroundColor: Colors.green),
-      );
-
-      // pindah ke halaman home/dashboard
-      Navigator.pushReplacementNamed(context, BookApp.routeName);
-    } catch (e) {
-      print("Error login: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Login gagal: ${e.toString()}"),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
 
   /// 🔹 Logout
-  Future<void> _logout() async {
-    await AuthenticationAPI.logoutUser();
-    print("Berhasil logout");
+  // Future<void> _logout() async {
+  //   await AuthenticationAPI.logoutUser();
+  //   print("Berhasil logout");
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Logout berhasil"),
-        backgroundColor: Colors.blue,
-      ),
-    );
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     const SnackBar(
+  //       content: Text("Logout berhasil"),
+  //       backgroundColor: Colors.blue,
+  //     ),
+  //   );
 
-    // kembali ke login
-    Navigator.pushReplacementNamed(context, UserLogin.routeName);
-  }
+  //   // kembali ke login
+  //   Navigator.pushReplacementNamed(context, UserLogin.routeName);
+  // }
 
   // Navigate to book list
 
@@ -296,7 +261,10 @@ class _RegisterUserState extends State<RegisterUser> {
                               const Text('Sudah punya akun? '),
                               TextButton(
                                 onPressed: () {
-                                  Navigator.pop(context);
+                                  Navigator.pushNamed(
+                                    context,
+                                    UserLogin.routeName,
+                                  );
                                 },
                                 child: const Text(
                                   'Masuk',

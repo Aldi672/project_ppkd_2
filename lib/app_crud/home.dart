@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:project_2/app_crud/pages/detail_login/dashboard.dart';
 import 'package:project_2/app_crud/pages/detail_login/detail_user.dart';
 import 'package:project_2/app_crud/pages/login-register_api/login_user.dart';
 import 'package:project_2/app_crud/pages/login-register_api/register_user.dart';
+
 import 'package:project_2/app_crud/screens/welcome_screen.dart';
 
 class BookApp extends StatelessWidget {
@@ -61,6 +63,7 @@ class BookApp extends StatelessWidget {
         BookApp.routeName: (context) => const BookApp(),
         UserLogin.routeName: (context) => const UserLogin(),
         RegisterUser.routeName: (context) => const RegisterUser(),
+        DashboardUser.routeName: (context) => const DashboardUser(),
       },
     );
   }

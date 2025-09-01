@@ -1,13 +1,9 @@
-// To parse this JSON data, do
-//
-//     final registrasiUserApi = registrasiUserApiFromJson(jsonString);
-
 import 'dart:convert';
 
 RegistrasiUserApi registrasiUserApiFromJson(String str) =>
     RegistrasiUserApi.fromJson(json.decode(str));
 
-String registrasiUserApiToJson(RegistrasiUserApi data) =>
+String RegistrasiUserApiToJson(RegistrasiUserApi data) =>
     json.encode(data.toJson());
 
 class RegistrasiUserApi {
@@ -63,8 +59,8 @@ class User {
   Map<String, dynamic> toJson() => {
     "name": name,
     "email": email,
-    "updated_at": updatedAt.toIso8601String(),
-    "created_at": createdAt.toIso8601String(),
+    "updated_at": updatedAt,
+    "created_at": createdAt,
     "id": id,
   };
 }

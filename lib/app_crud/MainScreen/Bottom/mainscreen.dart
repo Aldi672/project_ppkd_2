@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:project_2/app_crud/MainScreen/Bottom/bookmarkscreen.dart';
 import 'package:project_2/app_crud/MainScreen/Bottom/categoriesscreen.dart';
 import 'package:project_2/app_crud/MainScreen/bottom.dart';
-import 'package:project_2/app_crud/screens/book_list_screen.dart';
+import 'package:project_2/app_crud/pages/detail_login/dashboard.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -16,7 +16,7 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    const BookListScreen(),
+    const DashboardUser(),
     const CategoriesScreen(),
     const BookmarkScreen(),
   ];

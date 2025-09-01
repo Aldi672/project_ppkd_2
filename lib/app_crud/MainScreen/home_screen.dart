@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_2/app_crud/MainScreen/bottom.dart';
-import 'package:project_2/app_crud/screens/book_list_screen.dart';
+import 'package:project_2/app_crud/pages/detail_login/dashboard.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,7 +13,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    const BookListScreen(), // tab Beranda
+    const DashboardUser(), // tab Beranda
   ];
 
   void _onTabTapped(int index) {

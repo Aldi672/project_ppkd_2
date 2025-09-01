@@ -7,13 +7,14 @@ import 'package:project_2/app_crud/screens/add_book_screen.dart';
 import 'package:project_2/app_crud/screens/book_detail_screen.dart';
 import 'package:project_2/app_crud/screens/profile_screen.dart';
 
-class BookListScreen extends StatefulWidget {
-  const BookListScreen({super.key});
+class DashboardUser extends StatefulWidget {
+  static const String routeName = '/Book';
+  const DashboardUser({super.key});
   @override
-  State<BookListScreen> createState() => _BookListScreenState();
+  State<DashboardUser> createState() => _DashboardUserState();
 }
 
-class _BookListScreenState extends State<BookListScreen> {
+class _DashboardUserState extends State<DashboardUser> {
   List<Book> _books = [];
   List<Book> _filteredBooks = [];
   bool _isLoading = true;

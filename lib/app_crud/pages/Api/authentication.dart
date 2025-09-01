@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:project_2/app_crud/models/registrasi_api.dart';
 import 'package:project_2/app_crud/pages/Api/endpoint/endpoint.dart';
@@ -7,7 +9,7 @@ class AuthenticationAPI {
   // Ganti dengan URL API kamu
 
   /// ✅ Register User
-  static Future<RegistrasiUserApi?> registerUser({
+  static Future<RegistrasiUserApi> registerUser({
     required String name,
     required String email,
     required String password,
@@ -21,25 +23,22 @@ class AuthenticationAPI {
     );
 
     if (response.statusCode == 200) {
-      final data = registrasiUserApiFromJson(response.body);
-
-      // Simpan data ke SharedPreferences
-      await PreferenceHandler.saveLogin();
-      await PreferenceHandler.saveToken(data.data.token);
-      await PreferenceHandler.saveUserData(
-        data.data.user.name,
-        data.data.user.email,
+      final registerUserModel = RegistrasiUserApi.fromJson(
+        json.decode(response.body),
       );
-      await PreferenceHandler.saveUserId(data.data.user.id);
 
-      return data;
+      // SIMPAN TOKEN dan USER ID setelah register berhasil
+      await PreferenceHandler.saveToken(registerUserModel.data.token);
+      await PreferenceHandler.saveUserId(registerUserModel.data.user.id);
+      return registerUserModel;
     } else {
-      throw Exception("Register gagal: ${response.body}");
+      final error = json.decode(response.body);
+      throw Exception(error["message"] ?? "Register gagal");
     }
   }
 
   /// ✅ Login User
-  static Future<RegistrasiUserApi?> loginUser({
+  static Future<RegistrasiUserApi> loginUser({
     required String email,
     required String password,
   }) async {
@@ -51,20 +50,22 @@ class AuthenticationAPI {
     );
 
     if (response.statusCode == 200) {
-      final data = registrasiUserApiFromJson(response.body);
-
-      // Simpan data ke SharedPreferences
-      await PreferenceHandler.saveLogin();
-      await PreferenceHandler.saveToken(data.data.token);
-      await PreferenceHandler.saveUserData(
-        data.data.user.name,
-        data.data.user.email,
+      final registerUserModel = RegistrasiUserApi.fromJson(
+        json.decode(response.body),
       );
-      await PreferenceHandler.saveUserId(data.data.user.id);
 
-      return data;
+      await PreferenceHandler.saveToken(registerUserModel.data.token);
+      await PreferenceHandler.saveUserId(registerUserModel.data.user.id);
+      await PreferenceHandler.saveUserData(
+        registerUserModel.data.user.name,
+        registerUserModel.data.user.email,
+      );
+      await PreferenceHandler.saveLogin(true); // ✅ INI YANG PENTING
+
+      return registerUserModel;
     } else {
-      throw Exception("Login gagal: ${response.body}");
+      final error = json.decode(response.body);
+      throw Exception(error["message"] ?? "Login gagal");
     }
   }
 
