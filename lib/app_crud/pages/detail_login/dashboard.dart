@@ -3,8 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:project_2/app_crud/db/db_helper.dart';
 import 'package:project_2/app_crud/models/book.dart';
-import 'package:project_2/app_crud/screens/add_book_screen.dart';
+import 'package:project_2/app_crud/models/card_user.dart';
+import 'package:project_2/app_crud/pages/Api/authentication.dart';
+
 import 'package:project_2/app_crud/screens/book_detail_screen.dart';
+import 'package:project_2/app_crud/screens/book_reading.dart';
 
 class DashboardUser extends StatefulWidget {
   static const String routeName = '/Book';
@@ -14,6 +17,7 @@ class DashboardUser extends StatefulWidget {
 }
 
 class _DashboardUserState extends State<DashboardUser> {
+  late Future<SportCard> fieldsFuture;
   List<Book> _books = [];
   List<Book> _filteredBooks = [];
   bool _isLoading = true;
@@ -22,6 +26,7 @@ class _DashboardUserState extends State<DashboardUser> {
   @override
   void initState() {
     super.initState();
+    fieldsFuture = AuthenticationAPI.getFields();
     _loadBooks();
   }
 
@@ -364,34 +369,243 @@ class _DashboardUserState extends State<DashboardUser> {
                   ],
                 ),
               ),
+
               // Action Button
-              PopupMenuButton<String>(
-                onSelected: (value) {
-                  switch (value) {
-                    case 'delete':
-                      _deleteBook(book);
-                      break;
-                  }
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('Hapus'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
         ),
       ),
     );
   }
+
+  Widget _buildFieldCard(Datum field) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: InkWell(
+        // onTap: () {
+        //   Navigator.push(
+        //     context,
+        //     MaterialPageRoute(
+        //       builder: (context) => FieldDetailScreen(field: field),
+        //     ),
+        //   );
+        // },
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Gambar Lapangan (Placeholder)
+            Container(
+              height: 120,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
+                color: Colors.grey.shade200,
+              ),
+              child: const Icon(
+                Icons.sports_soccer,
+                size: 40,
+                color: Colors.grey,
+              ),
+            ),
+
+            // Informasi Lapangan
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Nama Lapangan
+                  Text(
+                    field.name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      height: 1.2,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  // Lokasi dan Jarak
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        size: 14,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          "Jln. Jend. Sudirman No.25",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  // Jarak
+                  Text(
+                    "1.6 km",
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Rating
+                  Row(
+                    children: [
+                      const Icon(Icons.star, size: 14, color: Colors.amber),
+                      const SizedBox(width: 4),
+                      Text(
+                        "4.2 (40)",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Harga
+                  Text(
+                    "300k/jam",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green.shade700,
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  // Dimensi Lapangan
+                  Text(
+                    "221 Hug × 259 Hug",
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Widget _buildFieldCard(Datum field) {
+  //   return Container(
+  //     width: 305,
+
+  //       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+  //       child: InkWell(
+  //         onTap: () {
+  //           // Navigasi ke detail lapangan
+  //           // Navigator.push(context, MaterialPageRoute(builder: (context) => FieldDetailScreen(field: field)));
+  //         },
+  //         borderRadius: BorderRadius.circular(12),
+  //         child: Padding(
+  //           padding: const EdgeInsets.all(16),
+  //           child: Column(
+  //             children: [
+  //               // Field Image Placeholder (karena model tidak punya image)
+  //               // Container(
+  //               //   width: 80,
+  //               //   height: 80,
+  //               //   decoration: BoxDecoration(
+  //               //     borderRadius: BorderRadius.circular(8),
+  //               //     color: Colors.grey.shade200,
+  //               //   ),
+  //               //   child: const Icon(
+  //               //     Icons.sports_soccer,
+  //               //     size: 40,
+  //               //     color: Colors.grey,
+  //               //   ),
+  //               // ),
+  //               const SizedBox(width: 16),
+
+  //               // Field Info
+  //               Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   Text(
+  //                     field.name,
+  //                     style: const TextStyle(
+  //                       fontSize: 16,
+  //                       fontWeight: FontWeight.bold,
+  //                     ),
+  //                     maxLines: 2,
+  //                     overflow: TextOverflow.ellipsis,
+  //                   ),
+  //                   const SizedBox(height: 8),
+  //                   Text(
+  //                     'ID: ${field.id}',
+  //                     style: TextStyle(
+  //                       fontSize: 14,
+  //                       color: Colors.grey.shade600,
+  //                     ),
+  //                   ),
+  //                   const SizedBox(height: 8),
+  //                   Column(
+  //                     children: [
+  //                       Container(
+  //                         padding: const EdgeInsets.symmetric(
+  //                           horizontal: 8,
+  //                           vertical: 4,
+  //                         ),
+  //                         decoration: BoxDecoration(
+  //                           color: Colors.blue.shade100,
+  //                           borderRadius: BorderRadius.circular(12),
+  //                         ),
+  //                         child: const Text(
+  //                           'Lapangan Futsal',
+  //                           style: TextStyle(
+  //                             fontSize: 12,
+  //                             color: Colors.blue,
+  //                             fontWeight: FontWeight.w500,
+  //                           ),
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ],
+  //               ),
+
+  //               const Icon(Icons.chevron_right, color: Colors.grey),
+  //             ],
+  //           ),
+  //         ),
+  //       ),
+
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -527,74 +741,100 @@ class _DashboardUserState extends State<DashboardUser> {
 
           // Filter Chips
           _buildFilterChips(),
-          // Book List
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _filteredBooks.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.library_books_outlined,
-                          size: 64,
-                          color: Colors.grey.shade400,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _books.isEmpty
-                              ? 'Belum ada buku dalam koleksi'
-                              : 'Tidak ada buku yang sesuai filter',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                        if (_books.isEmpty) ...[
-                          const SizedBox(height: 16),
-                          ElevatedButton.icon(
-                            onPressed: () async {
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const AddBookScreen(),
-                                ),
-                              );
-                              if (result == true) {
-                                _loadBooks();
-                              }
-                            },
-                            icon: const Icon(Icons.add),
-                            label: const Text('Tambah Buku Pertama'),
-                          ),
-                        ],
-                      ],
-                    ),
-                  )
-                : RefreshIndicator(
-                    onRefresh: _loadBooks,
-                    child: ListView.builder(
-                      itemCount: _filteredBooks.length,
-                      itemBuilder: (context, index) {
-                        return _buildBookCard(_filteredBooks[index]);
-                      },
-                    ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(
+                    right: 16,
+                    left: 16,
+                    top: 10,
+                    bottom: 20,
                   ),
+                  child: Text(
+                    "Lapangan Tersedia",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+
+                Expanded(
+                  child: FutureBuilder<SportCard>(
+                    future: fieldsFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text("Error: ${snapshot.error}"));
+                      } else if (!snapshot.hasData ||
+                          snapshot.data!.data.isEmpty) {
+                        return const Center(
+                          child: Text("Tidak ada data lapangan"),
+                        );
+                      } else {
+                        final fields = snapshot.data!.data;
+                        return GridView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2, // 2 kolom
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 10,
+                                childAspectRatio: 0.7, // Rasio lebar:tinggi
+                              ),
+                          itemCount: fields.length,
+                          itemBuilder: (context, index) {
+                            final field = fields[index];
+                            return _buildFieldCard(field);
+                          },
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
+
+          // Book List
+          // Expanded(
+          //   child: _isLoading
+          //       ? const Center(child: CircularProgressIndicator())
+          //       : _filteredBooks.isEmpty
+          //       ? Center(
+          //           child: Column(
+          //             mainAxisAlignment: MainAxisAlignment.center,
+          //             children: [
+          //               Icon(
+          //                 Icons.library_books_outlined,
+          //                 size: 64,
+          //                 color: Colors.grey.shade400,
+          //               ),
+          //               const SizedBox(height: 16),
+          //               Text(
+          //                 _books.isEmpty
+          //                     ? 'Belum ada buku dalam koleksi'
+          //                     : 'Tidak ada buku yang sesuai filter',
+          //                 style: TextStyle(
+          //                   fontSize: 16,
+          //                   color: Colors.grey.shade600,
+          //                 ),
+          //               ),
+          //             ],
+          //           ),
+          //         )
+          //       : RefreshIndicator(
+          //           onRefresh: _loadBooks,
+          //           child: ListView.builder(
+          //             itemCount: _filteredBooks.length,
+          //             itemBuilder: (context, index) {
+          //               return _buildBookCard(_filteredBooks[index]);
+          //             },
+          //           ),
+          //         ),
+          // ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddBookScreen()),
-          );
-          if (result == true) {
-            _loadBooks();
-          }
-        },
-        child: const Icon(Icons.add),
       ),
     );
   }

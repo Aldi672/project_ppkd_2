@@ -112,12 +112,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   Widget _buildBookGridCard(BuildContext context, Book book) {
     return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => BacaAsbabunNuzulScreen()),
-        );
-      },
+      // onTap: () {
+      //   Navigator.push(
+      //     context,
+      //     MaterialPageRoute(builder: (context) => BacaAsbabunNuzulScreen()),
+      //   );
+      // },
       child: Card(
         elevation: 3,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
