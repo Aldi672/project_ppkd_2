@@ -116,5 +116,25 @@ class AuthenticationAPI {
     }
   }
 
+  static Future<bool> addField(Map<String, dynamic> data) async {
+    final url = Uri.parse(Endpoint.addFields);
+    final token = await PreferenceHandler.getToken();
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+      body: json.encode(data),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return true;
+    } else {
+      throw Exception("Gagal menambahkan field: ${response.body}");
+    }
+  }
+
   /// ✅ Get Field Details by ID
 }

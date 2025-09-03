@@ -5,6 +5,7 @@ import 'package:project_2/app_crud/db/db_helper.dart';
 import 'package:project_2/app_crud/models/book.dart';
 import 'package:project_2/app_crud/models/card_user.dart';
 import 'package:project_2/app_crud/pages/Api/authentication.dart';
+import 'package:project_2/app_crud/pages/detail_login/pages_tambahan/card_rp.dart';
 
 import 'package:project_2/app_crud/screens/book_detail_screen.dart';
 import 'package:project_2/app_crud/screens/book_reading.dart';
@@ -252,16 +253,10 @@ class _DashboardUserState extends State<DashboardUser> {
             // Cek dulu apakah data updatedBook tidak null (ada buku yang berhasil diupdate)
 
             final index = _books.indexWhere((b) => b.id == updatedBook.id);
-            // Cari posisi (index) buku yang ada di list _books dengan mencocokkan id buku
-            // indexWhere akan mengembalikan posisi pertama yang cocok, atau -1 jika tidak ada
 
             if (index != -1) {
-              // Kalau index tidak -1 berarti buku dengan id yang sama ditemukan di dalam list
-
               setState(() {
                 _books[index] = updatedBook;
-                // Update data buku di posisi tersebut dengan data buku yang sudah diperbarui
-                // setState dipanggil agar UI di-refresh sesuai data terbaru
               });
             }
           }
@@ -380,15 +375,18 @@ class _DashboardUserState extends State<DashboardUser> {
 
   Widget _buildFieldCard(Datum field) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      margin: EdgeInsets.only(right: 20),
+      height: 300,
+      width: 200,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: Colors.white,
+        color: const Color.fromARGB(255, 255, 255, 255),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.3), // warna bayangan
+            blurRadius: 6, // seberapa lembut
+            spreadRadius: 0, // jangan terlalu melebar
+            offset: const Offset(0, 6), // hanya ke bawah
           ),
         ],
       ),
@@ -405,21 +403,67 @@ class _DashboardUserState extends State<DashboardUser> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Gambar Lapangan (Placeholder)
-            Container(
-              height: 120,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                ),
-                color: Colors.grey.shade200,
+            // Gambar Lapangan
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
               ),
-              child: const Icon(
-                Icons.sports_soccer,
-                size: 40,
-                color: Colors.grey,
+              child: Stack(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: 120,
+                    child: Image.network(
+                      field.imageUrl, // ambil dari API
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Center(
+                            child: Icon(
+                              Icons.broken_image,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
+                          ),
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        );
+                      },
+                    ),
+                  ),
+
+                  // Badge Rating
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.amber,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.star, size: 14, color: Colors.white),
+                          const SizedBox(width: 4),
+                          Text(
+                            "4.2", // ambil rating dari API kalau ada
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
 
@@ -443,7 +487,7 @@ class _DashboardUserState extends State<DashboardUser> {
 
                   const SizedBox(height: 6),
 
-                  // Lokasi dan Jarak
+                  // Lokasi
                   Row(
                     children: [
                       const Icon(
@@ -454,7 +498,7 @@ class _DashboardUserState extends State<DashboardUser> {
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          "Jln. Jend. Sudirman No.25",
+                          field.imagePath,
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey.shade600,
@@ -468,21 +512,13 @@ class _DashboardUserState extends State<DashboardUser> {
 
                   const SizedBox(height: 4),
 
-                  // Jarak
-                  Text(
-                    "1.6 km",
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // Rating
+                  // Harga per jam
                   Row(
                     children: [
-                      const Icon(Icons.star, size: 14, color: Colors.amber),
+                      const Icon(Icons.money, size: 14, color: Colors.green),
                       const SizedBox(width: 4),
                       Text(
-                        "4.2 (40)",
+                        "${formatRupiah(field.pricePerHour)}/jam",
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey.shade700,
@@ -494,23 +530,11 @@ class _DashboardUserState extends State<DashboardUser> {
 
                   const SizedBox(height: 8),
 
-                  // Harga
-                  Text(
-                    "300k/jam",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green.shade700,
-                    ),
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  // Dimensi Lapangan
-                  Text(
-                    "221 Hug × 259 Hug",
-                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-                  ),
+                  // Update terakhir (opsional)
+                  // Text(
+                  //   "Update: ${field.updatedAt.toString()}",
+                  //   style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                  // ),
                 ],
               ),
             ),
@@ -746,52 +770,51 @@ class _DashboardUserState extends State<DashboardUser> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Padding(
-                  padding: EdgeInsets.only(
-                    right: 16,
-                    left: 16,
-                    top: 10,
-                    bottom: 20,
-                  ),
-                  child: Text(
-                    "Lapangan Tersedia",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
+                // Padding(
+                //   padding: EdgeInsets.only(
+                //     right: 16,
+                //     left: 16,
+                //     top: 10,
+                //     bottom: 20,
+                //   ),
+                //   child: Text(
+                //     "Lapangan Tersedia",
+                //     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                //   ),
+                // ),
+                FutureBuilder<SportCard>(
+                  future: fieldsFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text("Error: ${snapshot.error}"));
+                    } else if (!snapshot.hasData ||
+                        snapshot.data!.data.isEmpty) {
+                      return const Center(
+                        child: Text("Tidak ada data lapangan"),
+                      );
+                    } else {
+                      final fields = snapshot.data!.data;
+                      return Container(
+                        padding: EdgeInsets.all(20),
+                        height: 280,
 
-                Expanded(
-                  child: FutureBuilder<SportCard>(
-                    future: fieldsFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text("Error: ${snapshot.error}"));
-                      } else if (!snapshot.hasData ||
-                          snapshot.data!.data.isEmpty) {
-                        return const Center(
-                          child: Text("Tidak ada data lapangan"),
-                        );
-                      } else {
-                        final fields = snapshot.data!.data;
-                        return GridView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2, // 2 kolom
-                                crossAxisSpacing: 10,
-                                mainAxisSpacing: 10,
-                                childAspectRatio: 0.7, // Rasio lebar:tinggi
-                              ),
-                          itemCount: fields.length,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          itemCount: fields.length, // jumlah data dari API
                           itemBuilder: (context, index) {
                             final field = fields[index];
                             return _buildFieldCard(field);
                           },
-                        );
-                      }
-                    },
-                  ),
+                        ),
+                      );
+                    }
+                  },
                 ),
               ],
             ),
