@@ -374,262 +374,240 @@ class _DashboardUserState extends State<DashboardUser> {
   }
 
   Widget _buildFieldCard(Datum field) {
+    String availabilityStatus;
+    Color statusColor;
+
+    // Logika sederhana untuk menentukan status (bisa disesuaikan dengan data API)
+    if (field.id % 3 == 0) {
+      availabilityStatus = "Available 10 Slot Today";
+      statusColor = Colors.green;
+    } else if (field.id % 3 == 1) {
+      availabilityStatus = "Last 2 Slot";
+      statusColor = Colors.orange;
+    } else {
+      availabilityStatus = "Not Available Today";
+      statusColor = Colors.red;
+    }
+
     return Container(
-      margin: EdgeInsets.only(right: 20),
-      height: 300,
-      width: 200,
+      margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: const Color.fromARGB(255, 255, 255, 255),
+        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3), // warna bayangan
-            blurRadius: 6, // seberapa lembut
-            spreadRadius: 0, // jangan terlalu melebar
-            offset: const Offset(0, 6), // hanya ke bawah
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            spreadRadius: 2,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: InkWell(
-        // onTap: () {
-        //   Navigator.push(
-        //     context,
-        //     MaterialPageRoute(
-        //       builder: (context) => FieldDetailScreen(field: field),
-        //     ),
-        //   );
-        // },
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Gambar Lapangan
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
-              ),
-              child: Stack(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: 120,
-                    child: Image.network(
-                      field.imageUrl, // ambil dari API
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Center(
-                            child: Icon(
-                              Icons.broken_image,
-                              size: 40,
-                              color: Colors.grey,
-                            ),
-                          ),
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        );
-                      },
-                    ),
-                  ),
-
-                  // Badge Rating
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.amber,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.star, size: 14, color: Colors.white),
-                          const SizedBox(width: 4),
-                          Text(
-                            "4.2", // ambil rating dari API kalau ada
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Informasi Lapangan
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Nama Lapangan
-                  Text(
-                    field.name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      height: 1.2,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  // Lokasi
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on,
-                        size: 14,
-                        color: Colors.grey,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          field.imagePath,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Gambar Lapangan
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 180,
+                  child: Image.network(
+                    field.imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: Colors.grey[200],
+                      child: const Center(
+                        child: Icon(
+                          Icons.broken_image,
+                          size: 40,
+                          color: Colors.grey,
                         ),
                       ),
-                    ],
+                    ),
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      );
+                    },
                   ),
+                ),
+              ),
 
-                  const SizedBox(height: 4),
-
-                  // Harga per jam
-                  Row(
+              // Badge Rating
+              Positioned(
+                top: 12,
+                right: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.amber[700],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
                     children: [
-                      const Icon(Icons.money, size: 14, color: Colors.green),
+                      const Icon(Icons.star, size: 14, color: Colors.white),
                       const SizedBox(width: 4),
                       Text(
-                        "${formatRupiah(field.pricePerHour)}/jam",
-                        style: TextStyle(
+                        "4.2", // Ganti dengan rating dari API jika tersedia
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                           fontSize: 12,
-                          color: Colors.grey.shade700,
-                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: 8),
-
-                  // Update terakhir (opsional)
-                  // Text(
-                  //   "Update: ${field.updatedAt.toString()}",
-                  //   style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-                  // ),
-                ],
+                ),
               ),
+            ],
+          ),
+
+          // Informasi Lapangan
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Nama Lapangan
+                Text(
+                  field.name,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    height: 1.2,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+
+                const SizedBox(height: 8),
+
+                // Lokasi
+                Row(
+                  children: [
+                    const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        field.imagePath,
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // Rating dan harga dalam satu baris
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Rating
+                    Row(
+                      children: [
+                        const Icon(Icons.star, size: 18, color: Colors.amber),
+                        const SizedBox(width: 4),
+                        const Text(
+                          "4.2",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          "(40)", // Ganti dengan jumlah review dari API
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // Harga
+                    Text(
+                      "${formatRupiah(field.pricePerHour)}/jam",
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // Garis pemisah
+                const Divider(height: 1, color: Colors.grey),
+
+                const SizedBox(height: 12),
+
+                // Status Ketersediaan
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        availabilityStatus,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: statusColor,
+                        ),
+                      ),
+                    ),
+
+                    ElevatedButton(
+                      onPressed: () {
+                        // Aksi ketika tombol pesan ditekan
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[700],
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                      ),
+                      child: const Text(
+                        "Pesan",
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
-
-  // Widget _buildFieldCard(Datum field) {
-  //   return Container(
-  //     width: 305,
-
-  //       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-  //       child: InkWell(
-  //         onTap: () {
-  //           // Navigasi ke detail lapangan
-  //           // Navigator.push(context, MaterialPageRoute(builder: (context) => FieldDetailScreen(field: field)));
-  //         },
-  //         borderRadius: BorderRadius.circular(12),
-  //         child: Padding(
-  //           padding: const EdgeInsets.all(16),
-  //           child: Column(
-  //             children: [
-  //               // Field Image Placeholder (karena model tidak punya image)
-  //               // Container(
-  //               //   width: 80,
-  //               //   height: 80,
-  //               //   decoration: BoxDecoration(
-  //               //     borderRadius: BorderRadius.circular(8),
-  //               //     color: Colors.grey.shade200,
-  //               //   ),
-  //               //   child: const Icon(
-  //               //     Icons.sports_soccer,
-  //               //     size: 40,
-  //               //     color: Colors.grey,
-  //               //   ),
-  //               // ),
-  //               const SizedBox(width: 16),
-
-  //               // Field Info
-  //               Column(
-  //                 crossAxisAlignment: CrossAxisAlignment.start,
-  //                 children: [
-  //                   Text(
-  //                     field.name,
-  //                     style: const TextStyle(
-  //                       fontSize: 16,
-  //                       fontWeight: FontWeight.bold,
-  //                     ),
-  //                     maxLines: 2,
-  //                     overflow: TextOverflow.ellipsis,
-  //                   ),
-  //                   const SizedBox(height: 8),
-  //                   Text(
-  //                     'ID: ${field.id}',
-  //                     style: TextStyle(
-  //                       fontSize: 14,
-  //                       color: Colors.grey.shade600,
-  //                     ),
-  //                   ),
-  //                   const SizedBox(height: 8),
-  //                   Column(
-  //                     children: [
-  //                       Container(
-  //                         padding: const EdgeInsets.symmetric(
-  //                           horizontal: 8,
-  //                           vertical: 4,
-  //                         ),
-  //                         decoration: BoxDecoration(
-  //                           color: Colors.blue.shade100,
-  //                           borderRadius: BorderRadius.circular(12),
-  //                         ),
-  //                         child: const Text(
-  //                           'Lapangan Futsal',
-  //                           style: TextStyle(
-  //                             fontSize: 12,
-  //                             color: Colors.blue,
-  //                             fontWeight: FontWeight.w500,
-  //                           ),
-  //                         ),
-  //                       ),
-  //                     ],
-  //                   ),
-  //                 ],
-  //               ),
-
-  //               const Icon(Icons.chevron_right, color: Colors.grey),
-  //             ],
-  //           ),
-  //         ),
-  //       ),
-
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -683,7 +661,7 @@ class _DashboardUserState extends State<DashboardUser> {
                         const SizedBox(width: 10),
                         // Sapaan
                         const Text(
-                          "Halo, Aldi Kurniawan",
+                          "Hallo, Aldi Taher",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -766,57 +744,28 @@ class _DashboardUserState extends State<DashboardUser> {
           // Filter Chips
           _buildFilterChips(),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                // Padding(
-                //   padding: EdgeInsets.only(
-                //     right: 16,
-                //     left: 16,
-                //     top: 10,
-                //     bottom: 20,
-                //   ),
-                //   child: Text(
-                //     "Lapangan Tersedia",
-                //     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                //   ),
-                // ),
-                FutureBuilder<SportCard>(
-                  future: fieldsFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text("Error: ${snapshot.error}"));
-                    } else if (!snapshot.hasData ||
-                        snapshot.data!.data.isEmpty) {
-                      return const Center(
-                        child: Text("Tidak ada data lapangan"),
-                      );
-                    } else {
-                      final fields = snapshot.data!.data;
-                      return Container(
-                        padding: EdgeInsets.all(20),
-                        height: 280,
-
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          itemCount: fields.length, // jumlah data dari API
-                          itemBuilder: (context, index) {
-                            final field = fields[index];
-                            return _buildFieldCard(field);
-                          },
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ],
+            child: FutureBuilder<SportCard>(
+              future: fieldsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text("Error: ${snapshot.error}"));
+                } else if (!snapshot.hasData || snapshot.data!.data.isEmpty) {
+                  return const Center(child: Text("Tidak ada data lapangan"));
+                } else {
+                  final fields = snapshot.data!.data;
+                  return ListView.builder(
+                    scrollDirection: Axis.vertical,
+                    padding: const EdgeInsets.only(bottom: 16),
+                    itemCount: fields.length,
+                    itemBuilder: (context, index) {
+                      final field = fields[index];
+                      return _buildFieldCard(field);
+                    },
+                  );
+                }
+              },
             ),
           ),
 

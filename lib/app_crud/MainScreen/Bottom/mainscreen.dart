@@ -17,7 +17,7 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = [
     const DashboardUser(),
-    const AddFieldScreen(),
+    const CategoriesScreen(),
     const BookmarkScreen(),
   ];
 
