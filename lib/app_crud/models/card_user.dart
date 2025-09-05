@@ -9,14 +9,14 @@ SportCard sportCardFromJson(String str) => SportCard.fromJson(json.decode(str));
 String sportCardToJson(SportCard data) => json.encode(data.toJson());
 
 class SportCard {
-  String message;
+  String? message;
   List<Datum> data;
 
   SportCard({required this.message, required this.data});
 
   factory SportCard.fromJson(Map<String, dynamic> json) => SportCard(
-    message: json["message"],
-    data: List<Datum>.from(json["data"].map((x) => Datum.fromJson(x))),
+    message: json["message"] ?? "",
+    data: List<Datum>.from((json["data"] ?? []).map((x) => Datum.fromJson(x))),
   );
 
   Map<String, dynamic> toJson() => {
@@ -45,13 +45,21 @@ class Datum {
   });
 
   factory Datum.fromJson(Map<String, dynamic> json) => Datum(
-    id: json["id"],
-    name: json["name"],
-    createdAt: DateTime.parse(json["created_at"]),
-    updatedAt: DateTime.parse(json["updated_at"]),
-    imagePath: json["image_path"],
-    pricePerHour: json["price_per_hour"],
-    imageUrl: json["image_url"],
+    id: json["id"] ?? 0,
+    name: json["name"] ?? "",
+    createdAt:
+        (json["created_at"] != null && json["created_at"].toString().isNotEmpty)
+        ? DateTime.parse(json["created_at"])
+        : DateTime.now(),
+
+    updatedAt:
+        (json["updated_at"] != null && json["updated_at"].toString().isNotEmpty)
+        ? DateTime.parse(json["updated_at"])
+        : DateTime.now(),
+
+    imagePath: json["image_path"] ?? "",
+    pricePerHour: json["price_per_hour"]?.toString() ?? "0",
+    imageUrl: json["image_url"] ?? "",
   );
 
   Map<String, dynamic> toJson() => {

@@ -2,11 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-
+import 'package:project_2/app_crud/MainScreen/Bottom/mainscreen.dart';
 import 'package:project_2/app_crud/pages/Api/authentication.dart';
-import 'package:project_2/app_crud/pages/detail_login/dashboard.dart';
 import 'package:project_2/app_crud/pages/login-register_api/register_user.dart';
-import 'package:project_2/app_crud/preference/shared_preference.dart';
 
 class UserLogin extends StatefulWidget {
   static const String routeName = '/login';
@@ -20,7 +18,7 @@ class _UserLoginState extends State<UserLogin> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   bool _obscurePassword = true;
   @override
@@ -228,44 +226,42 @@ class _UserLoginState extends State<UserLogin> {
                                           password: password,
                                         );
 
-                                    if (user.data != null) {
-                                      // ✅ Login sukses → tampilkan dialog dengan Lottie
-                                      showDialog(
-                                        context: context,
-                                        barrierDismissible: false,
-                                        builder: (context) {
-                                          return AlertDialog(
-                                            content: SizedBox(
-                                              height: 150,
-                                              width: 150,
-                                              child: Lottie.asset(
-                                                'assets/lottie/otp.json',
-                                                repeat: false,
-                                                onLoaded: (composition) {
-                                                  Future.delayed(
-                                                    composition.duration,
-                                                    () {
-                                                      if (mounted) {
-                                                        Navigator.pop(
-                                                          context,
-                                                        ); // Tutup dialog
-                                                        Navigator.pushReplacement(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                const DashboardUser(),
-                                                          ),
-                                                        );
-                                                      }
-                                                    },
-                                                  );
-                                                },
-                                              ),
+                                    // ✅ Login sukses → tampilkan dialog dengan Lottie
+                                    showDialog(
+                                      context: context,
+                                      barrierDismissible: false,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          content: SizedBox(
+                                            height: 150,
+                                            width: 150,
+                                            child: Lottie.asset(
+                                              'assets/lottie/otp.json',
+                                              repeat: false,
+                                              onLoaded: (composition) {
+                                                Future.delayed(
+                                                  composition.duration,
+                                                  () {
+                                                    if (mounted) {
+                                                      Navigator.pop(
+                                                        context,
+                                                      ); // Tutup dialog
+                                                      Navigator.pushReplacement(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              const MainScreen(),
+                                                        ),
+                                                      );
+                                                    }
+                                                  },
+                                                );
+                                              },
                                             ),
-                                          );
-                                        },
-                                      );
-                                    }
+                                          ),
+                                        );
+                                      },
+                                    );
                                   } catch (e) {
                                     // ❌ Kalau login gagal → tampilkan dialog error
                                     showDialog(

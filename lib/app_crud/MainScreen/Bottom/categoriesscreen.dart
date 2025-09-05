@@ -1,11 +1,6 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:project_2/app_crud/models/add_fileds.dart';
 import 'package:project_2/app_crud/models/card_user.dart';
 import 'package:project_2/app_crud/pages/Api/authentication.dart';
-import 'package:project_2/app_crud/pages/Api/report_api.dart';
 import 'package:project_2/app_crud/pages/detail_login/pages_tambahan/card_rp.dart';
 import 'package:project_2/app_crud/screens/add_field_screen.dart';
 

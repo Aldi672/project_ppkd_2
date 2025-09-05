@@ -13,7 +13,7 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
-  bool _isLoading = true;
+  final bool _isLoading = true;
   @override
   void initState() {
     super.initState();
