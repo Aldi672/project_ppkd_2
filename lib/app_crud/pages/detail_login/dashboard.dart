@@ -374,237 +374,172 @@ class _DashboardUserState extends State<DashboardUser> {
   }
 
   Widget _buildFieldCard(Datum field) {
-    String availabilityStatus;
-    Color statusColor;
-
-    // Logika sederhana untuk menentukan status (bisa disesuaikan dengan data API)
-    if (field.id % 3 == 0) {
-      availabilityStatus = "Available 10 Slot Today";
-      statusColor = Colors.green;
-    } else if (field.id % 3 == 1) {
-      availabilityStatus = "Last 2 Slot";
-      statusColor = Colors.orange;
-    } else {
-      availabilityStatus = "Not Available Today";
-      statusColor = Colors.red;
-    }
-
     return Container(
-      margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+      margin: EdgeInsets.only(right: 20),
+      height: 300,
+      width: 200,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        color: const Color.fromARGB(255, 255, 255, 255),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            spreadRadius: 2,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.3), // warna bayangan
+            blurRadius: 6, // seberapa lembut
+            spreadRadius: 0, // jangan terlalu melebar
+            offset: const Offset(0, 6), // hanya ke bawah
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Gambar Lapangan
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 180,
-                  child: Image.network(
-                    field.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      color: Colors.grey[200],
-                      child: const Center(
-                        child: Icon(
-                          Icons.broken_image,
-                          size: 40,
-                          color: Colors.grey,
-                        ),
+      child: InkWell(
+        // onTap: () {
+        //   Navigator.push(
+        //     context,
+        //     MaterialPageRoute(
+        //       builder: (context) => FieldDetailScreen(field: field),
+        //     ),
+        //   );
+        // },
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Gambar Lapangan
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
+              child: Stack(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: 120,
+                    child: Image.network(
+                      field.imageUrl, // ambil dari API
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Center(
+                            child: Icon(
+                              Icons.broken_image,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
+                          ),
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        );
+                      },
+                    ),
+                  ),
+
+                  // Badge Rating
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.amber,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.star, size: 14, color: Colors.white),
+                          const SizedBox(width: 4),
+                          Text(
+                            "4.2", // ambil rating dari API kalau ada
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      );
-                    },
                   ),
-                ),
+                ],
               ),
+            ),
 
-              // Badge Rating
-              Positioned(
-                top: 12,
-                right: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
+            // Informasi Lapangan
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Nama Lapangan
+                  Text(
+                    field.name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      height: 1.2,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.amber[700],
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
+
+                  const SizedBox(height: 6),
+
+                  // Lokasi
+                  Row(
                     children: [
-                      const Icon(Icons.star, size: 14, color: Colors.white),
+                      const Icon(
+                        Icons.location_on,
+                        size: 14,
+                        color: Colors.grey,
+                      ),
                       const SizedBox(width: 4),
-                      Text(
-                        "4.2", // Ganti dengan rating dari API jika tersedia
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                      Expanded(
+                        child: Text(
+                          field.imagePath,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
-                ),
-              ),
-            ],
-          ),
 
-          // Informasi Lapangan
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Nama Lapangan
-                Text(
-                  field.name,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    height: 1.2,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  const SizedBox(height: 4),
 
-                const SizedBox(height: 8),
-
-                // Lokasi
-                Row(
-                  children: [
-                    const Icon(Icons.location_on, size: 16, color: Colors.grey),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        field.imagePath,
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                // Rating dan harga dalam satu baris
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Rating
-                    Row(
-                      children: [
-                        const Icon(Icons.star, size: 18, color: Colors.amber),
-                        const SizedBox(width: 4),
-                        const Text(
-                          "4.2",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          "(40)", // Ganti dengan jumlah review dari API
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    // Harga
-                    Text(
-                      "${formatRupiah(field.pricePerHour)}/jam",
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                // Garis pemisah
-                const Divider(height: 1, color: Colors.grey),
-
-                const SizedBox(height: 12),
-
-                // Status Ketersediaan
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        availabilityStatus,
+                  // Harga per jam
+                  Row(
+                    children: [
+                      const Icon(Icons.money, size: 14, color: Colors.green),
+                      const SizedBox(width: 4),
+                      Text(
+                        "${formatRupiah(field.pricePerHour)}/jam",
                         style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: statusColor,
+                          fontSize: 12,
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                    ),
+                    ],
+                  ),
 
-                    ElevatedButton(
-                      onPressed: () {
-                        // Aksi ketika tombol pesan ditekan
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green[700],
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
-                        ),
-                      ),
-                      child: const Text(
-                        "Pesan",
-                        style: TextStyle(fontSize: 14),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  const SizedBox(height: 8),
+
+                  // Update terakhir (opsional)
+                  // Text(
+                  //   "Update: ${field.updatedAt.toString()}",
+                  //   style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                  // ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
