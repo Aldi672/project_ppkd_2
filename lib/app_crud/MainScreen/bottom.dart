@@ -25,7 +25,7 @@ class CustomBottomNavBar extends StatelessWidget {
         ),
         BottomNavigationBarItem(icon: Icon(Icons.schedule), label: 'Jadwal'),
         // BottomNavigationBarItem(icon: Icon(Icons.local_offer), label: 'Promo'),
-        // BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
       ],
     );
   }

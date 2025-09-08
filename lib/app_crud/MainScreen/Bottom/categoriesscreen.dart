@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:project_2/app_crud/models/card_user.dart';
 import 'package:project_2/app_crud/pages/Api/authentication.dart';
+import 'package:project_2/app_crud/pages/Api/report_api.dart';
 import 'package:project_2/app_crud/pages/detail_login/pages_tambahan/card_rp.dart';
 import 'package:project_2/app_crud/screens/add_field_screen.dart';
+import 'package:project_2/app_crud/screens/edit_book_screen.dart';
+// import 'package:project_2/app_crud/screens/edit_field_screen.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -17,7 +20,53 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   @override
   void initState() {
     super.initState();
-    fieldsFuture = AuthenticationAPI.getFields();
+    _refreshData();
+  }
+
+  void _refreshData() {
+    setState(() {
+      fieldsFuture = AuthenticationAPI.getFields();
+    });
+  }
+
+  Future<void> _deleteField(int fieldId, String fieldName) async {
+    // Tampilkan dialog konfirmasi
+    bool confirmDelete = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Konfirmasi Hapus"),
+          content: Text("Apakah kamu yakin ingin menghapus $fieldName?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Batal"),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text("Hapus"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmDelete != true) return;
+
+    try {
+      final success = await FieldService.deleteField(fieldId);
+      if (success) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("$fieldName berhasil dihapus")));
+        _refreshData(); // Refresh data setelah berhasil hapus
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
   }
 
   Widget _buildFieldCard(Datum field) {
@@ -91,7 +140,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       const Icon(Icons.star, size: 14, color: Colors.white),
                       const SizedBox(width: 4),
                       Text(
-                        "4.2", // Ganti dengan rating dari API jika tersedia
+                        "4.2",
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -157,7 +206,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      "(40)", // Ganti dengan jumlah review dari API
+                      "(40)",
                       style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                   ],
@@ -189,7 +238,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
                 const SizedBox(height: 12),
 
-                // Harga per jam
+                // Harga per jam dan Tombol Edit/Delete
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -201,25 +250,34 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         color: Colors.green,
                       ),
                     ),
-                    ElevatedButton(
-                      onPressed: () {
-                        // Aksi ketika tombol pesan ditekan
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green[700],
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                    // Tombol Edit dan Delete untuk Admin
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    EditFieldScreen(field: field),
+                              ),
+                            ).then((value) {
+                              if (value == true) {
+                                _refreshData(); // Refresh data setelah edit
+                              }
+                            });
+                          },
+                          icon: const Icon(Icons.edit, color: Colors.blue),
+                          tooltip: "Edit",
                         ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
+                        IconButton(
+                          onPressed: () {
+                            _deleteField(field.id, field.name);
+                          },
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          tooltip: "Hapus",
                         ),
-                      ),
-                      child: const Text(
-                        "Pesan",
-                        style: TextStyle(fontSize: 14),
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -253,7 +311,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   String _getAvailabilityText(String status) {
-    // Anda bisa menyesuaikan teks berdasarkan data dari API
     return status;
   }
 
@@ -261,7 +318,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Kategori Lapangan"),
+        title: const Text("Kategori Lapangan - Admin"),
         backgroundColor: Colors.green[700],
         foregroundColor: Colors.white,
       ),
@@ -288,7 +345,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 } else {
                   final fields = snapshot.data!.data;
                   return SizedBox(
-                    height: 400, // Tinggi container untuk horizontal scroll
+                    height: 400,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.only(left: 20, right: 20),
@@ -302,8 +359,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 }
               },
             ),
-
-            // Tambahkan section lain di sini jika diperlukan
           ],
         ),
       ),
@@ -314,9 +369,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             MaterialPageRoute(builder: (context) => const AddFieldScreen()),
           ).then((value) {
             if (value == true) {
-              setState(() {
-                fieldsFuture = AuthenticationAPI.getFields(); // Refresh data
-              });
+              _refreshData(); // Refresh data setelah tambah
             }
           });
         },

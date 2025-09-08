@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:project_2/app_crud/MainScreen/Bottom/bookmarkscreen.dart';
 import 'package:project_2/app_crud/MainScreen/Bottom/categoriesscreen.dart';
+import 'package:project_2/app_crud/MainScreen/Bottom/jadwal_page.dart';
 import 'package:project_2/app_crud/MainScreen/bottom.dart';
 import 'package:project_2/app_crud/pages/detail_login/dashboard.dart';
 
@@ -18,6 +19,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = [
     const DashboardUser(),
     const CategoriesScreen(),
+    const JadwalScreen(fieldId: 0, fieldName: 'Default Field'),
     const BookmarkScreen(),
   ];
 
@@ -25,6 +27,16 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  void _navigateToJadwalScreen(int fieldId, String fieldName) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            JadwalScreen(fieldId: fieldId, fieldName: fieldName),
+      ),
+    );
   }
 
   @override
