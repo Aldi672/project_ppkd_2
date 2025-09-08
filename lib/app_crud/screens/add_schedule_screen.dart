@@ -1,7 +1,6 @@
-// add_schedule_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:project_2/app_crud/pages/Api/scheduleservice.dart';
+import 'package:project_2/app_crud/services/schedule_service.dart';
 
 class AddScheduleScreen extends StatefulWidget {
   final int fieldId;
@@ -48,7 +47,6 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
     if (picked != null && picked != _selectedStartTime) {
       setState(() {
         _selectedStartTime = picked;
-        // Auto-set end time to 1 hour after start time
         _selectedEndTime = TimeOfDay(
           hour: (picked.hour + 1) % 24,
           minute: picked.minute,
@@ -91,16 +89,23 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
         endTime: _formatTimeOfDay(_selectedEndTime),
       );
 
-      Navigator.pop(context, true); // Return success
+      // Kembali ke halaman sebelumnya dengan status sukses
+      Navigator.pop(context, true);
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(response.message ?? "Jadwal berhasil ditambahkan"),
           backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
         ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("$e"), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text("Error: $e"),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
       );
     } finally {
       setState(() {
@@ -121,8 +126,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
             children: [
               // Informasi Lapangan
               Card(

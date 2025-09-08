@@ -1,10 +1,10 @@
 // main_screen.dart
 import 'package:flutter/material.dart';
 import 'package:project_2/app_crud/MainScreen/Bottom/bookmarkscreen.dart';
-import 'package:project_2/app_crud/MainScreen/Bottom/categoriesscreen.dart';
-import 'package:project_2/app_crud/MainScreen/Bottom/jadwal_page.dart';
+import 'package:project_2/app_crud/MainScreen/Bottom/update_lapangan.dart';
 import 'package:project_2/app_crud/MainScreen/bottom.dart';
 import 'package:project_2/app_crud/pages/detail_login/dashboard.dart';
+import 'package:project_2/app_crud/screens/booking_list_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -15,11 +15,12 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-
+  int? _selectedFieldId;
+  String? _selectedFieldName;
   final List<Widget> _screens = [
     const DashboardUser(),
+    const BookingListScreen(),
     const CategoriesScreen(),
-    const JadwalScreen(fieldId: 0, fieldName: 'Default Field'),
     const BookmarkScreen(),
   ];
 
@@ -27,16 +28,6 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       _selectedIndex = index;
     });
-  }
-
-  void _navigateToJadwalScreen(int fieldId, String fieldName) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            JadwalScreen(fieldId: fieldId, fieldName: fieldName),
-      ),
-    );
   }
 
   @override

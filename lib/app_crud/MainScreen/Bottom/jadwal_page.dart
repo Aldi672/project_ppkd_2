@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:project_2/app_crud/models/booking_lapangan.dart';
 import 'package:project_2/app_crud/models/gets_model.dart';
-
-import 'package:project_2/app_crud/pages/Api/scheduleservice.dart';
 import 'package:project_2/app_crud/screens/add_schedule_screen.dart';
+import 'package:project_2/app_crud/screens/booking_list_screen.dart';
+import 'package:project_2/app_crud/services/booking_service.dart';
+import 'package:project_2/app_crud/services/schedule_service.dart';
 
 class JadwalScreen extends StatefulWidget {
   final int fieldId;
@@ -46,6 +48,107 @@ class _JadwalScreenState extends State<JadwalScreen> {
     });
   }
 
+  // ✅ Function untuk booking jadwal
+  Future<void> _bookSchedule(int scheduleId, String timeRange) async {
+    try {
+      setState(() {
+        // Tampilkan loading
+      });
+
+      final result = await BookingService.bookSchedule(scheduleId);
+
+      _refreshData(); // Refresh data setelah booking berhasil
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.message ?? "Booking berhasil!"),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      // Navigate to booking details or show success dialog
+      _showBookingSuccessDialog(result, timeRange);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Gagal booking: $e"),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  // ✅ Dialog konfirmasi booking
+  void _showBookingConfirmationDialog(int scheduleId, String timeRange) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Konfirmasi Booking"),
+        content: Text("Apakah Anda yakin ingin booking jadwal $timeRange?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _bookSchedule(scheduleId, timeRange);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            child: const Text("Booking"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ✅ Dialog sukses booking
+  void _showBookingSuccessDialog(BookingLapangan booking, String timeRange) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Booking Berhasil!"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Jadwal: $timeRange"),
+            Text("Lapangan: ${widget.fieldName}"),
+            Text("Tanggal: ${DateFormat('d MMMM y').format(_selectedDate)}"),
+            const SizedBox(height: 16),
+            const Text(
+              "Booking ID:",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text("#${booking.data?.id ?? 'N/A'}"),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Navigate to booking list screen
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const BookingListScreen(),
+                ),
+              );
+            },
+            child: const Text("Lihat Booking Saya"),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -81,6 +184,18 @@ class _JadwalScreenState extends State<JadwalScreen> {
         ],
       ),
     );
+
+    if (confirm == true) {
+      // Implementasi penghapusan jadwal di sini
+      // await ScheduleService.deleteSchedule(scheduleId);
+      _refreshData();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Jadwal berhasil dihapus"),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
   }
 
   Widget _buildHeader() {
@@ -140,8 +255,8 @@ class _JadwalScreenState extends State<JadwalScreen> {
   }
 
   Widget _buildJadwalItem(Data jadwal) {
-    final isBooked =
-        jadwal.isBooked == "1"; // Perhatikan: isBooked adalah String
+    final isBooked = jadwal.isBooked == "1";
+    final timeRange = "${jadwal.startTime} - ${jadwal.endTime}";
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -163,7 +278,6 @@ class _JadwalScreenState extends State<JadwalScreen> {
       ),
       child: Row(
         children: [
-          // Time and status section
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,7 +308,6 @@ class _JadwalScreenState extends State<JadwalScreen> {
             ),
           ),
 
-          // Status icon and delete button
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -203,6 +316,13 @@ class _JadwalScreenState extends State<JadwalScreen> {
                   icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () => _deleteSchedule(jadwal.id!),
                   tooltip: "Hapus Jadwal",
+                ),
+              if (!isBooked)
+                IconButton(
+                  icon: const Icon(Icons.book_online, color: Colors.blue),
+                  onPressed: () =>
+                      _showBookingConfirmationDialog(jadwal.id!, timeRange),
+                  tooltip: "Booking Jadwal",
                 ),
               Container(
                 width: 24,
@@ -225,7 +345,6 @@ class _JadwalScreenState extends State<JadwalScreen> {
   }
 
   Widget _buildJadwalList(List<Data> jadwalList) {
-    // Sort jadwal by start time
     jadwalList.sort((a, b) => a.startTime!.compareTo(b.startTime!));
 
     return Expanded(
@@ -357,7 +476,25 @@ class _JadwalScreenState extends State<JadwalScreen> {
           ),
         ],
       ),
-      // FLOATING ACTION BUTTON DIHAPUS DARI SINI
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddScheduleScreen(
+                fieldId: widget.fieldId,
+                fieldName: widget.fieldName,
+              ),
+            ),
+          ).then((value) {
+            if (value == true) {
+              _refreshData();
+            }
+          });
+        },
+        backgroundColor: Colors.green[700],
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
       body: Column(
         children: [
           _buildHeader(),

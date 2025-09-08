@@ -57,7 +57,7 @@ class ScheduleService {
     try {
       final formattedDate = DateFormat('yyyy-MM-dd').format(date);
       final token = await PreferenceHandler.getToken();
-      // ✅ GUNAKAN ENDPOINT YANG BENAR
+
       final response = await http.get(
         Uri.parse(
           '${Endpoint.getSchedulesByField(fieldId)}?date=$formattedDate',
@@ -79,7 +79,7 @@ class ScheduleService {
         // Handle response berdasarkan struktur yang diharapkan
         if (responseData is Map && responseData.containsKey('data')) {
           final jadwal = GetJadwal.fromJson(
-            Map<String, dynamic>.from(responseData), // ✅ casting disini
+            Map<String, dynamic>.from(responseData),
           );
           return jadwal.data;
         } else {

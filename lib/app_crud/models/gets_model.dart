@@ -16,9 +16,7 @@ class GetJadwal {
 
   factory GetJadwal.fromJson(Map<String, dynamic> json) => GetJadwal(
     message: json['message'] ?? '',
-    data:
-        (json['data'] as List?)?.map((item) => Data.fromJson(item)).toList() ??
-        [],
+    data: (json['data'] as List).map((e) => Data.fromJson(e)).toList(),
   );
 
   Map<String, dynamic> toJson() => {

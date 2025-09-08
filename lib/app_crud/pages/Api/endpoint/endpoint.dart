@@ -15,9 +15,13 @@ class Endpoint {
 
   // ✅ PERBAIKI: Endpoint untuk get schedules by field ID
   static String getSchedulesByField(int fieldId) {
-    return "$baseURL/schedules/$fieldId"; //
+    return "$baseURL/schedules/$fieldId"; // Pastikan endpoint ini benar
   }
 
-  static const String bookField = "$baseURL/bookings";
-  static const String getUserBookings = "$baseURL/user/bookings";
+  static const String bookField = "$baseURL/bookings"; // Untuk create booking
+  static String getBookings = "$baseURL/bookings"; // Untuk get semua bookings
+  static String getUserBookings =
+      "$baseURL/user/bookings"; // Untuk get bookings user
+  static String cancelBooking(int id) =>
+      "$baseURL/bookings/$id"; // Untuk cancel booking
 }
