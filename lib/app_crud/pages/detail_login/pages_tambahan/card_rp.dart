@@ -2,6 +2,8 @@ import 'package:intl/intl.dart';
 
 String formatRupiah(String price) {
   try {
+    if (price.isEmpty) return "Rp 0";
+
     // parse string ke double
     double value = double.parse(price);
     // kalau mau dibulatkan ke integer
@@ -14,6 +16,6 @@ String formatRupiah(String price) {
     );
     return formatter.format(intValue);
   } catch (e) {
-    return price; // fallback kalau parsing gagal
+    return "Rp 0"; // fallback kalau parsing gagal
   }
 }

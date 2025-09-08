@@ -15,11 +15,17 @@ class CustomBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       currentIndex: currentIndex,
+      type: BottomNavigationBarType.fixed,
       onTap: onTap,
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Beranda'),
-        BottomNavigationBarItem(icon: Icon(Icons.category), label: 'Kategori'),
-        BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Bookmark'),
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.calendar_today),
+          label: 'Booking',
+        ),
+        BottomNavigationBarItem(icon: Icon(Icons.schedule), label: 'Jadwal'),
+        // BottomNavigationBarItem(icon: Icon(Icons.local_offer), label: 'Promo'),
+        // BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
       ],
     );
   }
