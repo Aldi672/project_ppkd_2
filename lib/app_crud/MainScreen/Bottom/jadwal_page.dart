@@ -24,6 +24,7 @@ class JadwalScreen extends StatefulWidget {
 class _JadwalScreenState extends State<JadwalScreen> {
   late Future<List<Data>> _jadwalFuture;
   DateTime _selectedDate = DateTime.now();
+  List<Data>? _cachedJadwalList; // Cache untuk data jadwal
 
   @override
   void initState() {
@@ -33,10 +34,12 @@ class _JadwalScreenState extends State<JadwalScreen> {
 
   Future<List<Data>> _fetchJadwal() async {
     try {
-      return await ScheduleService.getSchedulesByField(
+      final jadwalList = await ScheduleService.getSchedulesByField(
         fieldId: widget.fieldId,
         date: _selectedDate,
       );
+      _cachedJadwalList = jadwalList; // Simpan data ke cache
+      return jadwalList;
     } catch (e) {
       throw Exception("Gagal memuat jadwal: $e");
     }
@@ -48,16 +51,43 @@ class _JadwalScreenState extends State<JadwalScreen> {
     });
   }
 
-  // ✅ Function untuk booking jadwal
+  // ✅ Function untuk booking jadwal dengan optimistic update
   Future<void> _bookSchedule(int scheduleId, String timeRange) async {
+    List<Data>? previousState;
+
     try {
-      setState(() {
-        // Tampilkan loading
-      });
+      // Simpan state sebelumnya untuk fallback
+      previousState = _cachedJadwalList;
+
+      // Optimistic update - ubah status lokal menjadi booked
+      if (_cachedJadwalList != null) {
+        setState(() {
+          _cachedJadwalList = _cachedJadwalList!.map((item) {
+            if (item.id == scheduleId) {
+              return Data(
+                id: item.id,
+                fieldId: item.fieldId,
+                date: item.date,
+                startTime: item.startTime,
+                endTime: item.endTime,
+                isBooked: "1", // Ubah status menjadi booked
+                createdAt: item.createdAt,
+                updatedAt: item.updatedAt,
+              );
+            }
+            return item;
+          }).toList();
+
+          // Update future dengan data yang sudah diubah
+          _jadwalFuture = Future.value(_cachedJadwalList!);
+        });
+      }
 
       final result = await BookingService.bookSchedule(scheduleId);
 
-      _refreshData(); // Refresh data setelah booking berhasil
+      // Refresh data setelah booking berhasil untuk sinkronisasi dengan server
+      await Future.delayed(const Duration(milliseconds: 300));
+      _refreshData();
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -70,6 +100,14 @@ class _JadwalScreenState extends State<JadwalScreen> {
       // Navigate to booking details or show success dialog
       _showBookingSuccessDialog(result, timeRange);
     } catch (e) {
+      // Rollback jika gagal
+      if (previousState != null) {
+        setState(() {
+          _cachedJadwalList = previousState;
+          _jadwalFuture = Future.value(previousState);
+        });
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Gagal booking: $e"),
@@ -160,41 +198,9 @@ class _JadwalScreenState extends State<JadwalScreen> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
+        _cachedJadwalList = null; // Reset cache saat ganti tanggal
         _refreshData();
       });
-    }
-  }
-
-  Future<void> _deleteSchedule(int scheduleId) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Hapus Jadwal"),
-        content: const Text("Apakah Anda yakin ingin menghapus jadwal ini?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text("Batal"),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text("Hapus"),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      // Implementasi penghapusan jadwal di sini
-      // await ScheduleService.deleteSchedule(scheduleId);
-      _refreshData();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Jadwal berhasil dihapus"),
-          backgroundColor: Colors.green,
-        ),
-      );
     }
   }
 
@@ -276,69 +282,171 @@ class _JadwalScreenState extends State<JadwalScreen> {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "${jadwal.startTime} - ${jadwal.endTime}",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: isBooked ? Colors.red[800] : Colors.green[800],
+          Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header dengan logo dan nama venue
+                  Row(
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.green[800],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.safety_divider_outlined,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          widget.fieldName,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  isBooked ? "Sudah Dipesan" : "Tersedia",
-                  style: TextStyle(
-                    color: isBooked ? Colors.red[600] : Colors.green[600],
+                  const SizedBox(height: 16),
+
+                  // Divider
+                  Container(height: 1, color: Colors.grey[300]),
+                  const SizedBox(height: 16),
+
+                  // Detail lapangan
+                  const Row(
+                    children: [
+                      Icon(Icons.location_on, color: Colors.green, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'Lapangan 2',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                if (jadwal.date != null) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 12),
+
+                  // Tanggal dan waktu
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_today,
+                        color: Colors.green,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        "${jadwal.startTime} - ${jadwal.endTime}",
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
                   Text(
-                    DateFormat('d MMMM y').format(jadwal.date!),
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    isBooked ? "Sudah Dipesan" : "Tersedia",
+                    style: TextStyle(
+                      color: isBooked ? Colors.red[600] : Colors.green[600],
+                    ),
+                  ),
+
+                  // Status booking
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green[50],
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.green),
+                          ),
+                          child: const Text(
+                            'Dikonfirmasi',
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (!isBooked)
+                        IconButton(
+                          icon: const Icon(
+                            Icons.book_online,
+                            color: Colors.blue,
+                          ),
+                          onPressed: () => _showBookingConfirmationDialog(
+                            jadwal.id!,
+                            timeRange,
+                          ),
+                          tooltip: "Booking Jadwal",
+                        ),
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isBooked ? Colors.red : Colors.green,
+                        ),
+                        child: Icon(
+                          isBooked ? Icons.check : Icons.circle,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-              ],
+              ),
             ),
           ),
 
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (!isBooked)
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => _deleteSchedule(jadwal.id!),
-                  tooltip: "Hapus Jadwal",
-                ),
-              if (!isBooked)
-                IconButton(
-                  icon: const Icon(Icons.book_online, color: Colors.blue),
-                  onPressed: () =>
-                      _showBookingConfirmationDialog(jadwal.id!, timeRange),
-                  tooltip: "Booking Jadwal",
-                ),
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isBooked ? Colors.red : Colors.green,
-                ),
-                child: Icon(
-                  isBooked ? Icons.check : Icons.circle,
-                  color: Colors.white,
-                  size: 16,
-                ),
-              ),
-            ],
-          ),
+          // Text(
+          //   "${jadwal.startTime} - ${jadwal.endTime}",
+          //   style: TextStyle(
+          //     fontSize: 16,
+          //     fontWeight: FontWeight.bold,
+          //     color: isBooked ? Colors.red[800] : Colors.green[800],
+          //   ),
+          // ),
+          // const SizedBox(height: 4),
+          // Text(
+          //   isBooked ? "Sudah Dipesan" : "Tersedia",
+          //   style: TextStyle(
+          //     color: isBooked ? Colors.red[600] : Colors.green[600],
+          //   ),
+          // ),
+          // if (jadwal.date != null) ...[
+          //   const SizedBox(height: 4),
+          //   Text(
+          //     DateFormat('d MMMM y').format(jadwal.date!),
+          //     style: const TextStyle(fontSize: 12, color: Colors.grey),
+          //   ),
+          // ],
         ],
       ),
     );

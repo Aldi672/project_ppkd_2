@@ -46,6 +46,32 @@ class Data {
     this.updatedAt,
   });
 
+  // Di file models/gets_model.dart
+
+  // ... properti lainnya
+
+  Data copyWith({
+    int? id,
+    String? fieldId,
+    DateTime? date,
+    String? startTime,
+    String? endTime,
+    String? isBooked,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Data(
+      id: id ?? this.id,
+      fieldId: fieldId ?? this.fieldId,
+      date: date ?? this.date,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      isBooked: isBooked ?? this.isBooked,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
   factory Data.fromJson(Map<String, dynamic> json) => Data(
     id: json["id"],
     fieldId: json["field_id"],

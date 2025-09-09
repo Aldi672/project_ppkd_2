@@ -21,7 +21,7 @@ class Endpoint {
   static const String bookField = "$baseURL/bookings"; // Untuk create booking
   static String getBookings = "$baseURL/bookings"; // Untuk get semua bookings
   static String getUserBookings =
-      "$baseURL/user/bookings"; // Untuk get bookings user
+      "$baseURL/bookings"; // Untuk get bookings user
   static String cancelBooking(int id) =>
       "$baseURL/bookings/$id"; // Untuk cancel booking
 }

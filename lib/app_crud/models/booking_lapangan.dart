@@ -23,12 +23,12 @@ class BookingLapangan {
 }
 
 class BookingData {
-  int? userId;
-  int? scheduleId;
+  dynamic userId; // Ubah dari int? ke dynamic
+  dynamic scheduleId; // Ubah dari int? ke dynamic
   DateTime? updatedAt;
   DateTime? createdAt;
-  int? id;
-  Schedule? schedule; // Tambahkan field schedule
+  dynamic id; // Ubah dari int? ke dynamic
+  Schedule? schedule;
 
   BookingData({
     this.userId,
@@ -40,15 +40,15 @@ class BookingData {
   });
 
   factory BookingData.fromJson(Map<String, dynamic> json) => BookingData(
-    userId: json["user_id"],
-    scheduleId: json["schedule_id"],
+    userId: _parseDynamicToInt(json["user_id"]),
+    scheduleId: _parseDynamicToInt(json["schedule_id"]),
     updatedAt: json["updated_at"] == null
         ? null
-        : DateTime.parse(json["updated_at"]),
+        : DateTime.parse(json["updated_at"].toString()),
     createdAt: json["created_at"] == null
         ? null
-        : DateTime.parse(json["created_at"]),
-    id: json["id"],
+        : DateTime.parse(json["created_at"].toString()),
+    id: _parseDynamicToInt(json["id"]),
     schedule: json["schedule"] == null
         ? null
         : Schedule.fromJson(json["schedule"]),
@@ -62,18 +62,26 @@ class BookingData {
     "id": id,
     "schedule": schedule?.toJson(),
   };
+
+  // Helper method untuk parsing dynamic ke int
+  static int? _parseDynamicToInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value);
+    return null;
+  }
 }
 
 class Schedule {
-  int? id;
-  int? fieldId;
+  dynamic id; // Ubah dari int? ke dynamic
+  dynamic fieldId; // Ubah dari int? ke dynamic
   String? date;
   String? startTime;
   String? endTime;
   String? isBooked;
   DateTime? createdAt;
   DateTime? updatedAt;
-  Field? field; // Tambahkan field information
+  Field? field;
 
   Schedule({
     this.id,
@@ -88,18 +96,18 @@ class Schedule {
   });
 
   factory Schedule.fromJson(Map<String, dynamic> json) => Schedule(
-    id: json["id"],
-    fieldId: json["field_id"],
-    date: json["date"],
-    startTime: json["start_time"],
-    endTime: json["end_time"],
-    isBooked: json["is_booked"],
+    id: _parseDynamicToInt(json["id"]),
+    fieldId: _parseDynamicToInt(json["field_id"]),
+    date: json["date"]?.toString(),
+    startTime: json["start_time"]?.toString(),
+    endTime: json["end_time"]?.toString(),
+    isBooked: json["is_booked"]?.toString(),
     createdAt: json["created_at"] == null
         ? null
-        : DateTime.parse(json["created_at"]),
+        : DateTime.parse(json["created_at"].toString()),
     updatedAt: json["updated_at"] == null
         ? null
-        : DateTime.parse(json["updated_at"]),
+        : DateTime.parse(json["updated_at"].toString()),
     field: json["field"] == null ? null : Field.fromJson(json["field"]),
   );
 
@@ -114,13 +122,21 @@ class Schedule {
     "updated_at": updatedAt?.toIso8601String(),
     "field": field?.toJson(),
   };
+
+  // Helper method untuk parsing dynamic ke int
+  static int? _parseDynamicToInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value);
+    return null;
+  }
 }
 
 class Field {
-  int? id;
+  dynamic id; // Ubah dari int? ke dynamic
   String? name;
   String? description;
-  int? pricePerHour;
+  dynamic pricePerHour; // Ubah dari int? ke dynamic
   String? imageUrl;
   DateTime? createdAt;
   DateTime? updatedAt;
@@ -136,17 +152,17 @@ class Field {
   });
 
   factory Field.fromJson(Map<String, dynamic> json) => Field(
-    id: json["id"],
-    name: json["name"],
-    description: json["description"],
-    pricePerHour: json["price_per_hour"],
-    imageUrl: json["image_url"],
+    id: _parseDynamicToInt(json["id"]),
+    name: json["name"]?.toString(),
+    description: json["description"]?.toString(),
+    pricePerHour: _parseDynamicToInt(json["price_per_hour"]),
+    imageUrl: json["image_url"]?.toString(),
     createdAt: json["created_at"] == null
         ? null
-        : DateTime.parse(json["created_at"]),
+        : DateTime.parse(json["created_at"].toString()),
     updatedAt: json["updated_at"] == null
         ? null
-        : DateTime.parse(json["updated_at"]),
+        : DateTime.parse(json["updated_at"].toString()),
   );
 
   Map<String, dynamic> toJson() => {
@@ -158,4 +174,12 @@ class Field {
     "created_at": createdAt?.toIso8601String(),
     "updated_at": updatedAt?.toIso8601String(),
   };
+
+  // Helper method untuk parsing dynamic ke int
+  static int? _parseDynamicToInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value);
+    return null;
+  }
 }
