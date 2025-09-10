@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:project_2/app_crud/models/card_user.dart';
+import 'package:project_2/app_crud/models/get_lapangan.dart';
 
 class SportCardWidget extends StatelessWidget {
   final SportCard field;

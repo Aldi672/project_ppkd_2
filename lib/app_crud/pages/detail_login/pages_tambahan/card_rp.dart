@@ -21,26 +21,7 @@ String formatRupiah(String price) {
 }
 
 // Fungsi untuk memformat waktu dengan menghilangkan detik
-String formatTimeRange(String timeRange) {
-  return timeRange.replaceAll(RegExp(r':00(?= - |$)'), '');
-}
+
 
 // Atau jika ingin lebih aman dengan parsing
-String formatTimeRangeSafe(String timeRange) {
-  try {
-    final parts = timeRange.split(' - ');
-    if (parts.length == 2) {
-      final start = parts[0];
-      final end = parts[1];
 
-      // Hilangkan :00 dari akhir setiap waktu
-      final formattedStart = start.replaceAll(RegExp(r':00$'), '');
-      final formattedEnd = end.replaceAll(RegExp(r':00$'), '');
-
-      return '$formattedStart - $formattedEnd';
-    }
-  } catch (e) {
-    print('Error formatting time: $e');
-  }
-  return timeRange;
-}

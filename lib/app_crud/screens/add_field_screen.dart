@@ -72,7 +72,7 @@ class _AddFieldScreenState extends State<AddFieldScreen> {
         setState(() => isLoading = false);
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+        ).showSnackBar(SnackBar(content: Text("$e")));
       }
     } else if (_imageBase64 == null) {
       ScaffoldMessenger.of(context).showSnackBar(

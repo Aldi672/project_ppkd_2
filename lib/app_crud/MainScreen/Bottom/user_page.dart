@@ -1,17 +1,21 @@
-// bookmark_screen.dart
 import 'package:flutter/material.dart';
 import 'package:project_2/app_crud/pages/Api/authentication.dart';
 import 'package:project_2/app_crud/pages/login-register_api/login_user.dart';
+import 'package:project_2/app_crud/pages/page_bottom/booking_history_page.dart';
+import 'package:project_2/app_crud/pages/page_bottom/saved_fields_page.dart';
+import 'package:project_2/app_crud/pages/page_bottom/settings_page.dart';
 import 'package:project_2/app_crud/preference/shared_preference.dart';
 
-class BookmarkScreen extends StatefulWidget {
-  const BookmarkScreen({super.key});
+// Import halaman-halaman baru
+
+class UpdatePage extends StatefulWidget {
+  const UpdatePage({super.key});
 
   @override
-  State<BookmarkScreen> createState() => _BookmarkScreenState();
+  State<UpdatePage> createState() => _UpdatePageState();
 }
 
-class _BookmarkScreenState extends State<BookmarkScreen> {
+class _UpdatePageState extends State<UpdatePage> {
   Map<String, String?> userData = {};
   bool isLoading = true;
 
@@ -67,6 +71,10 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text('Error saat logout: $e')));
     }
+  }
+
+  void _navigateToPage(Widget page) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => page));
   }
 
   @override
@@ -153,25 +161,20 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                         _buildMenuItem(
                           icon: Icons.bookmark,
                           title: 'Lapangan Tersimpan',
-                          onTap: () {
-                            // Navigate to saved fields
-                          },
+                          onTap: () => _navigateToPage(const SavedFieldsPage()),
                         ),
                         const Divider(height: 1),
                         _buildMenuItem(
                           icon: Icons.history,
                           title: 'Riwayat Booking',
-                          onTap: () {
-                            // Navigate to booking history
-                          },
+                          onTap: () =>
+                              _navigateToPage(const BookingHistoryPage()),
                         ),
                         const Divider(height: 1),
                         _buildMenuItem(
                           icon: Icons.settings,
                           title: 'Pengaturan',
-                          onTap: () {
-                            // Navigate to settings
-                          },
+                          onTap: () => _navigateToPage(const SettingsPage()),
                         ),
                       ],
                     ),
@@ -203,12 +206,6 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                   const Spacer(),
 
                   // App Info
-                  Center(
-                    child: Text(
-                      'App Futsal v1.0.0',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                    ),
-                  ),
                 ],
               ),
             ),

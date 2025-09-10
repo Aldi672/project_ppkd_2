@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:project_2/app_crud/models/card_user.dart';
+import 'package:project_2/app_crud/models/get_lapangan.dart';
 import 'package:project_2/app_crud/pages/Api/report_api.dart';
 
 class EditFieldScreen extends StatefulWidget {
@@ -52,9 +52,7 @@ class _EditFieldScreenState extends State<EditFieldScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Gagal memilih gambar: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
     }
   }
 
@@ -78,9 +76,7 @@ class _EditFieldScreenState extends State<EditFieldScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text(response.message)));
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
     } finally {
       setState(() {
         _isLoading = false;

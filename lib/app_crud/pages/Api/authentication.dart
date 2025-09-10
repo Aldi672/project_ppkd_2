@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:project_2/app_crud/models/card_user.dart';
+import 'package:project_2/app_crud/models/get_lapangan.dart';
 import 'package:project_2/app_crud/models/registrasi_api.dart';
 import 'package:project_2/app_crud/pages/Api/endpoint/endpoint.dart';
 import 'package:project_2/app_crud/preference/shared_preference.dart';

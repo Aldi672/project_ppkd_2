@@ -23,11 +23,11 @@ class BookingLapangan {
 }
 
 class BookingData {
-  dynamic userId; // Ubah dari int? ke dynamic
-  dynamic scheduleId; // Ubah dari int? ke dynamic
+  dynamic userId;
+  dynamic scheduleId;
   DateTime? updatedAt;
   DateTime? createdAt;
-  dynamic id; // Ubah dari int? ke dynamic
+  dynamic id;
   Schedule? schedule;
 
   BookingData({

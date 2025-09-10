@@ -3,6 +3,9 @@ import 'package:project_2/app_crud/pages/detail_login/dashboard.dart';
 import 'package:project_2/app_crud/pages/detail_login/detail_user.dart';
 import 'package:project_2/app_crud/pages/login-register_api/login_user.dart';
 import 'package:project_2/app_crud/pages/login-register_api/register_user.dart';
+import 'package:project_2/app_crud/pages/page_bottom/booking_history_page.dart';
+import 'package:project_2/app_crud/pages/page_bottom/saved_fields_page.dart';
+import 'package:project_2/app_crud/pages/page_bottom/settings_page.dart';
 
 import 'package:project_2/app_crud/screens/welcome_screen.dart';
 
@@ -64,6 +67,9 @@ class BookApp extends StatelessWidget {
         UserLogin.routeName: (context) => const UserLogin(),
         RegisterUser.routeName: (context) => const RegisterUser(),
         DashboardUser.routeName: (context) => const DashboardUser(),
+        SavedFieldsPage.routeName: (context) => const SavedFieldsPage(),
+        BookingHistoryPage.routeName: (context) => const BookingHistoryPage(),
+        SettingsPage.routeName: (context) => const SettingsPage(),
       },
     );
   }

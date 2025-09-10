@@ -1,6 +1,6 @@
 // main_screen.dart
 import 'package:flutter/material.dart';
-import 'package:project_2/app_crud/MainScreen/Bottom/bookmarkscreen.dart';
+import 'package:project_2/app_crud/MainScreen/Bottom/user_page.dart';
 import 'package:project_2/app_crud/MainScreen/Bottom/update_lapangan.dart';
 import 'package:project_2/app_crud/MainScreen/bottom.dart';
 import 'package:project_2/app_crud/pages/detail_login/dashboard.dart';
@@ -15,13 +15,12 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  int? _selectedFieldId;
-  String? _selectedFieldName;
+
   final List<Widget> _screens = [
     const DashboardUser(),
     const BookingListScreen(),
     const CategoriesScreen(),
-    const BookmarkScreen(),
+    const UpdatePage(),
   ];
 
   void _onItemTapped(int index) {

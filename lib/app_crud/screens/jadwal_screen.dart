@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:project_2/app_crud/models/booking_lapangan.dart';
 import 'package:project_2/app_crud/models/gets_model.dart';
+import 'package:project_2/app_crud/pages/detail_login/pages_tambahan/card_rp_format.dart';
 import 'package:project_2/app_crud/screens/add_schedule_screen.dart';
 import 'package:project_2/app_crud/screens/booking_list_screen.dart';
 import 'package:project_2/app_crud/services/booking_service.dart';
@@ -24,7 +25,8 @@ class JadwalScreen extends StatefulWidget {
 class _JadwalScreenState extends State<JadwalScreen> {
   late Future<List<Data>> _jadwalFuture;
   DateTime _selectedDate = DateTime.now();
-  List<Data>? _cachedJadwalList; // Cache untuk data jadwal
+  List<Data>? _cachedJadwalList;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -34,14 +36,21 @@ class _JadwalScreenState extends State<JadwalScreen> {
 
   Future<List<Data>> _fetchJadwal() async {
     try {
+      setState(() {
+        _isLoading = true;
+      });
       final jadwalList = await ScheduleService.getSchedulesByField(
         fieldId: widget.fieldId,
         date: _selectedDate,
       );
-      _cachedJadwalList = jadwalList; // Simpan data ke cache
+      _cachedJadwalList = jadwalList;
       return jadwalList;
     } catch (e) {
       throw Exception("Gagal memuat jadwal: $e");
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -51,15 +60,12 @@ class _JadwalScreenState extends State<JadwalScreen> {
     });
   }
 
-  // ✅ Function untuk booking jadwal dengan optimistic update
   Future<void> _bookSchedule(int scheduleId, String timeRange) async {
     List<Data>? previousState;
 
     try {
-      // Simpan state sebelumnya untuk fallback
       previousState = _cachedJadwalList;
 
-      // Optimistic update - ubah status lokal menjadi booked
       if (_cachedJadwalList != null) {
         setState(() {
           _cachedJadwalList = _cachedJadwalList!.map((item) {
@@ -70,7 +76,7 @@ class _JadwalScreenState extends State<JadwalScreen> {
                 date: item.date,
                 startTime: item.startTime,
                 endTime: item.endTime,
-                isBooked: "1", // Ubah status menjadi booked
+                isBooked: "1",
                 createdAt: item.createdAt,
                 updatedAt: item.updatedAt,
               );
@@ -78,7 +84,6 @@ class _JadwalScreenState extends State<JadwalScreen> {
             return item;
           }).toList();
 
-          // Update future dengan data yang sudah diubah
           _jadwalFuture = Future.value(_cachedJadwalList!);
         });
       }
@@ -230,35 +235,35 @@ class _JadwalScreenState extends State<JadwalScreen> {
     );
   }
 
-  Widget _buildDateSelector() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            DateFormat('d MMMM y').format(_selectedDate),
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[700],
-            ),
-          ),
-          IconButton(
-            onPressed: () => _selectDate(context),
-            icon: const Icon(Icons.calendar_today, color: Colors.green),
-            tooltip: "Pilih Tanggal",
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildDateSelector() {
+  //   // return Container(
+  //   //   margin: const EdgeInsets.all(16),
+  //   //   padding: const EdgeInsets.all(12),
+  //   //   decoration: BoxDecoration(
+  //   //     color: Colors.white,
+  //   //     borderRadius: BorderRadius.circular(8),
+  //   //     border: Border.all(color: Colors.grey[300]!),
+  //   //   ),
+  //   //   child: Row(
+  //   //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //   //     children: [
+  //   //       // Text(
+  //   //       //   DateFormat('d MMMM y').format(_selectedDate),
+  //   //       //   style: TextStyle(
+  //   //       //     fontSize: 16,
+  //   //       //     fontWeight: FontWeight.bold,
+  //   //       //     color: Colors.grey[700],
+  //   //       //   ),
+  //   //       // ),
+  //   //       // IconButton(
+  //   //       //   onPressed: () => _selectDate(context),
+  //   //       //   icon: const Icon(Icons.calendar_today, color: Colors.green),
+  //   //       //   tooltip: "Pilih Tanggal",
+  //   //       // ),
+  //   //     ],
+  //   //   ),
+  //   // );
+  // }
 
   Widget _buildJadwalItem(Data jadwal) {
     final isBooked = jadwal.isBooked == "1";
@@ -330,16 +335,19 @@ class _JadwalScreenState extends State<JadwalScreen> {
                   const SizedBox(height: 16),
 
                   // Detail lapangan
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.location_on, color: Colors.green, size: 20),
-                      SizedBox(width: 8),
+                      const Icon(
+                        Icons.lock_clock,
+                        color: Colors.green,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
                       Text(
-                        'Lapangan 2',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                        formatTimeRangeSafe(
+                          "${jadwal.startTime} - ${jadwal.endTime}",
                         ),
+                        style: const TextStyle(fontSize: 16),
                       ),
                     ],
                   ),
@@ -354,20 +362,17 @@ class _JadwalScreenState extends State<JadwalScreen> {
                         size: 20,
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        "${jadwal.startTime} - ${jadwal.endTime}",
-                        style: const TextStyle(fontSize: 16),
-                      ),
+                      if (jadwal.date != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          DateFormat('d MMMM y').format(jadwal.date!),
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ],
                     ],
                   ),
 
                   const SizedBox(height: 16),
-                  Text(
-                    isBooked ? "Sudah Dipesan" : "Tersedia",
-                    style: TextStyle(
-                      color: isBooked ? Colors.red[600] : Colors.green[600],
-                    ),
-                  ),
 
                   // Status booking
                   Row(
@@ -375,47 +380,25 @@ class _JadwalScreenState extends State<JadwalScreen> {
                     children: [
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
+                          padding: const EdgeInsets.symmetric(),
                           decoration: BoxDecoration(
                             color: Colors.green[50],
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: Colors.green),
                           ),
-                          child: const Text(
-                            'Dikonfirmasi',
-                            style: TextStyle(
-                              color: Colors.green,
-                              fontWeight: FontWeight.w500,
+                          child: TextButton(
+                            onPressed: () => _showBookingConfirmationDialog(
+                              jadwal.id!,
+                              timeRange,
+                            ),
+                            child: Text(
+                              isBooked ? "dikonfirmasi" : "konfirmasi",
+                              style: TextStyle(
+                                color: Colors.green,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                      if (!isBooked)
-                        IconButton(
-                          icon: const Icon(
-                            Icons.book_online,
-                            color: Colors.blue,
-                          ),
-                          onPressed: () => _showBookingConfirmationDialog(
-                            jadwal.id!,
-                            timeRange,
-                          ),
-                          tooltip: "Booking Jadwal",
-                        ),
-                      Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isBooked ? Colors.red : Colors.green,
-                        ),
-                        child: Icon(
-                          isBooked ? Icons.check : Icons.circle,
-                          color: Colors.white,
-                          size: 16,
                         ),
                       ),
                     ],
@@ -424,29 +407,6 @@ class _JadwalScreenState extends State<JadwalScreen> {
               ),
             ),
           ),
-
-          // Text(
-          //   "${jadwal.startTime} - ${jadwal.endTime}",
-          //   style: TextStyle(
-          //     fontSize: 16,
-          //     fontWeight: FontWeight.bold,
-          //     color: isBooked ? Colors.red[800] : Colors.green[800],
-          //   ),
-          // ),
-          // const SizedBox(height: 4),
-          // Text(
-          //   isBooked ? "Sudah Dipesan" : "Tersedia",
-          //   style: TextStyle(
-          //     color: isBooked ? Colors.red[600] : Colors.green[600],
-          //   ),
-          // ),
-          // if (jadwal.date != null) ...[
-          //   const SizedBox(height: 4),
-          //   Text(
-          //     DateFormat('d MMMM y').format(jadwal.date!),
-          //     style: const TextStyle(fontSize: 12, color: Colors.grey),
-          //   ),
-          // ],
         ],
       ),
     );
@@ -606,7 +566,7 @@ class _JadwalScreenState extends State<JadwalScreen> {
       body: Column(
         children: [
           _buildHeader(),
-          _buildDateSelector(),
+          // _buildDateSelector(),
           const SizedBox(height: 8),
           FutureBuilder<List<Data>>(
             future: _jadwalFuture,

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:project_2/app_crud/MainScreen/Bottom/jadwal_page.dart';
-import 'package:project_2/app_crud/models/card_user.dart';
+import 'package:project_2/app_crud/pages/detail_login/pages_tambahan/build_rp.dart';
+import 'package:project_2/app_crud/pages/detail_login/pages_tambahan/corousel_rp.dart'
+    hide formatRupiah;
+import 'package:project_2/app_crud/screens/jadwal_screen.dart';
+import 'package:project_2/app_crud/models/get_lapangan.dart';
 import 'package:project_2/app_crud/pages/Api/authentication.dart';
 import 'package:project_2/app_crud/pages/detail_login/pages_tambahan/card_rp.dart';
-import 'package:project_2/app_crud/screens/add_schedule_screen.dart'; // Import halaman jadwal
+import 'package:project_2/app_crud/screens/add_schedule_screen.dart';
 
 class DashboardUser extends StatefulWidget {
   static const String routeName = '/Book';
@@ -14,235 +17,219 @@ class DashboardUser extends StatefulWidget {
 
 class _DashboardUserState extends State<DashboardUser> {
   late Future<SportCard> fieldsFuture;
-
-  final bool _isLoading = true;
-
   final TextEditingController _searchController = TextEditingController();
+  List<Datum> _allFields = [];
+  List<Datum> _filteredFields = [];
+  bool _isSearching = false;
 
   @override
   void initState() {
     super.initState();
     fieldsFuture = AuthenticationAPI.getFields();
+    fieldsFuture.then((sportCard) {
+      setState(() {
+        _allFields = sportCard.data;
+        _filteredFields = _allFields;
+      });
+    });
+
+    // Add listener to search controller
+    _searchController.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
   }
 
-  Widget _buildFieldCard(Datum field) {
-    String availabilityStatus;
-    Color statusColor;
+  void _onSearchChanged() {
+    final query = _searchController.text.toLowerCase().trim();
 
-    if (field.id % 3 == 0) {
-      availabilityStatus = "Available 10 Slot Today";
-      statusColor = Colors.green;
-    } else if (field.id % 3 == 1) {
-      availabilityStatus = "Last 2 Slot";
-      statusColor = Colors.orange;
+    if (query.isEmpty) {
+      setState(() {
+        _filteredFields = _allFields;
+        _isSearching = false;
+      });
     } else {
-      availabilityStatus = "Not Available Today";
-      statusColor = Colors.red;
+      setState(() {
+        _filteredFields = _allFields.where((field) {
+          return field.name.toLowerCase().contains(query);
+        }).toList();
+        _isSearching = true;
+      });
     }
+  }
 
+  void _clearSearch() {
+    setState(() {
+      _searchController.clear();
+      _filteredFields = _allFields;
+      _isSearching = false;
+    });
+  }
+
+  Widget _buildSearchBar() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
         color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
+            blurRadius: 10,
             spreadRadius: 2,
-            offset: const Offset(0, 4),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 180,
-                  child: Image.network(
-                    field.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      color: Colors.grey[200],
-                      child: const Center(
-                        child: Icon(
-                          Icons.broken_image,
-                          size: 40,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      );
-                    },
-                  ),
-                ),
+          const Icon(Icons.search, color: Colors.grey),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(
+                hintText: "Cari lapangan futsal...",
+                border: InputBorder.none,
+                hintStyle: TextStyle(color: Colors.grey),
               ),
-            ],
-          ),
-
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  field.name,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    height: 1.2,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-
-                const SizedBox(height: 8),
-
-                Text(
-                  "${formatRupiah(field.pricePerHour)}/jam",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                // Status ketersediaan
-                Row(
-                  children: [
-                    Icon(Icons.circle, size: 12, color: statusColor),
-                    const SizedBox(width: 6),
-                    Text(
-                      availabilityStatus,
-                      style: TextStyle(
-                        color: statusColor,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                Row(
-                  children: [
-                    // Tombol Pesan (Tambah Jadwal)
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AddScheduleScreen(
-                                fieldId: field.id,
-                                fieldName: field.name,
-                              ),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        child: const Text(
-                          "Tambah Jadwal",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(width: 8),
-
-                    // Tombol Lihat Jadwal
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => JadwalScreen(
-                                fieldId: field.id,
-                                fieldName: field.name,
-                              ),
-                            ),
-                          );
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.blue,
-                          side: const BorderSide(color: Colors.blue),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        child: const Text(
-                          "Lihat Jadwal",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                const Divider(height: 1, color: Colors.grey),
-
-                const SizedBox(height: 12),
-
-                Row(
-                  children: [
-                    const Icon(Icons.star, size: 20, color: Colors.amber),
-                    const SizedBox(width: 4),
-                    const Text(
-                      "4.2",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      "(40 reviews)",
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
-              ],
+              style: const TextStyle(fontSize: 16),
             ),
           ),
+          const SizedBox(width: 8),
+          if (_isSearching)
+            IconButton(
+              icon: const Icon(Icons.clear, color: Colors.grey, size: 20),
+              onPressed: _clearSearch,
+            ),
+          const SizedBox(width: 4),
+          const Icon(Icons.filter_list, color: Colors.green),
         ],
       ),
+    );
+  }
+
+  Widget _buildFieldsGrid(List<Datum> fields) {
+    return Container(
+      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 20),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 2.7 / 4,
+        ),
+        itemCount: fields.length,
+        itemBuilder: (context, index) {
+          final field = fields[index];
+          return buildFieldCard(field, context);
+        },
+      ),
+    );
+  }
+
+  Widget _buildSearchResults() {
+    if (_filteredFields.isEmpty && _isSearching) {
+      return const Padding(
+        padding: EdgeInsets.all(40),
+        child: Column(
+          children: [
+            Icon(Icons.search_off, size: 60, color: Colors.grey),
+            SizedBox(height: 16),
+            Text(
+              "Lapangan tidak ditemukan",
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            Text(
+              "Coba dengan kata kunci lain",
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return _buildFieldsGrid(_filteredFields);
+  }
+
+  Widget _buildNormalContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Carousel Section
+        FutureBuilder<SportCard>(
+          future: fieldsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SizedBox.shrink();
+            } else if (snapshot.hasError ||
+                !snapshot.hasData ||
+                snapshot.data!.data.isEmpty) {
+              return const SizedBox.shrink();
+            } else {
+              final featuredFields = snapshot.data!.data.take(3).toList();
+              return Column(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(20, 20, 20, 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Lapangan Populer",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: double.infinity,
+                    height: 220,
+                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    child: CarouselSliderWidget(featuredFields: featuredFields),
+                  ),
+                ],
+              );
+            }
+          },
+        ),
+
+        // Recommended Fields Section
+        const Padding(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, 10),
+          child: Text(
+            "Rekomendasi Lapangan",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ),
+
+        // Fields Grid
+        FutureBuilder<SportCard>(
+          future: fieldsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text("Error: ${snapshot.error}"));
+            } else if (!snapshot.hasData || snapshot.data!.data.isEmpty) {
+              return const Center(child: Text("Tidak ada data lapangan"));
+            } else {
+              final fields = snapshot.data!.data;
+              return _buildFieldsGrid(fields);
+            }
+          },
+        ),
+      ],
     );
   }
 
@@ -251,74 +238,62 @@ class _DashboardUserState extends State<DashboardUser> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          const Text(
-                            "Sewa Futsal",
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 27,
-                              fontWeight: FontWeight.w600,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Halo, Selamat Datang!",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
+                              ),
                             ),
+                            SizedBox(height: 4),
+                            Text(
+                              "Sewa Lapangan Futsal",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          width: 45,
+                          height: 45,
+                          decoration: BoxDecoration(
+                            color: Colors.green[100],
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ],
-                      ),
-                      const Icon(
-                        Icons.notifications,
-                        color: Colors.black,
-                        size: 28,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                ],
+                          child: const Icon(Icons.person, color: Colors.green),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
 
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 20, 20, 10),
-              child: Text(
-                "Rekomendasi Lapangan",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
+              // Search Bar
+              _buildSearchBar(),
 
-            Expanded(
-              child: FutureBuilder<SportCard>(
-                future: fieldsFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text("Error: ${snapshot.error}"));
-                  } else if (!snapshot.hasData || snapshot.data!.data.isEmpty) {
-                    return const Center(child: Text("Tidak ada data lapangan"));
-                  } else {
-                    final fields = snapshot.data!.data;
-                    return ListView.builder(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      itemCount: fields.length,
-                      itemBuilder: (context, index) {
-                        final field = fields[index];
-                        return _buildFieldCard(field);
-                      },
-                    );
-                  }
-                },
-              ),
-            ),
-          ],
+              // Conditional Content based on search state
+              _isSearching ? _buildSearchResults() : _buildNormalContent(),
+            ],
+          ),
         ),
       ),
     );
